@@ -312,7 +312,6 @@
 
       <TargetMachine>MachineX86</TargetMachine>
 
-      <EntryPointSymbol>DllMain</EntryPointSymbol>
 
     </Link>
 
@@ -426,7 +425,6 @@ exit 0</Command>
 
       <AllowIsolation>true</AllowIsolation>
 
-      <EntryPointSymbol>DllMain</EntryPointSymbol>
 
     </Link>
 
@@ -508,7 +506,6 @@ exit 0</Command>
 
       <TargetMachine>MachineX86</TargetMachine>
 
-      <EntryPointSymbol>DllMain</EntryPointSymbol>
 
     </Link>
 
@@ -590,7 +587,6 @@ exit 0</Command>
 
       <TargetMachine>MachineX64</TargetMachine>
 
-      <EntryPointSymbol>DllMain</EntryPointSymbol>
 
     </Link>
 
