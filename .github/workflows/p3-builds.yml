@@ -90,9 +90,9 @@ jobs:
         shell: pwsh
         run: |
           $msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
-          & $msbuild p3\vncdll\vncdll.sln /p:Configuration=Release /p:Platform=x64 /m /v:m
+          & $msbuild p3\vncdll\vncdll.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143 /m /v:m
           if ($LASTEXITCODE -ne 0) { exit 1 }
-          & $msbuild p3\vncdll\vncdll.sln /p:Configuration=Release /p:Platform=Win32 /m /v:m
+          & $msbuild p3\vncdll\vncdll.sln /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /m /v:m
           if ($LASTEXITCODE -ne 0) { exit 1 }
           Get-ChildItem -Recurse p3\vncdll -Include *.dll | Format-Table FullName,Length
       - uses: actions/upload-artifact@v4
