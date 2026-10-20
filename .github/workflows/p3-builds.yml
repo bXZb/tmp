@@ -89,7 +89,7 @@ jobs:
       - name: msbuild vncdll (rsmudge fork of the MSF TightVNC reflective server)
         shell: pwsh
         run: |
-          $msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe"
+          $msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
           & $msbuild p3\vncdll\vncdll.sln /p:Configuration=Release /p:Platform=x64 /m /v:m
           if ($LASTEXITCODE -ne 0) { exit 1 }
           & $msbuild p3\vncdll\vncdll.sln /p:Configuration=Release /p:Platform=Win32 /m /v:m
