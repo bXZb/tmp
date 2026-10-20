@@ -290,7 +290,7 @@
 
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
 
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;libucrt.lib;libvcruntime.lib;libcpmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
 
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
 
@@ -312,7 +312,8 @@
 
       <TargetMachine>MachineX86</TargetMachine>
 
-      <EntryPointSymbol>DllMain</EntryPointSymbol>
+      <EntryPointSymbol>DllMain</EntryPointSymbol>
+
     </Link>
 
     <PostBuildEvent>
@@ -401,7 +402,7 @@ exit 0</Command>
 
     <Link>
 
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;libucrt.lib;libvcruntime.lib;libcpmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
 
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
 
@@ -425,7 +426,8 @@ exit 0</Command>
 
       <AllowIsolation>true</AllowIsolation>
 
-      <EntryPointSymbol>DllMain</EntryPointSymbol>
+      <EntryPointSymbol>DllMain</EntryPointSymbol>
+
     </Link>
 
     <PostBuildEvent>
@@ -490,7 +492,7 @@ exit 0</Command>
 
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
 
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;libucrt.lib;libvcruntime.lib;libcpmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
 
       <SuppressStartupBanner>true</SuppressStartupBanner>
 
@@ -506,7 +508,8 @@ exit 0</Command>
 
       <TargetMachine>MachineX86</TargetMachine>
 
-      <EntryPointSymbol>DllMain</EntryPointSymbol>
+      <EntryPointSymbol>DllMain</EntryPointSymbol>
+
     </Link>
 
     <PostBuildEvent>
@@ -571,7 +574,7 @@ exit 0</Command>
 
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
 
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;libucrt.lib;libvcruntime.lib;libcpmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
 
       <SuppressStartupBanner>true</SuppressStartupBanner>
 
@@ -587,7 +590,8 @@ exit 0</Command>
 
       <TargetMachine>MachineX64</TargetMachine>
 
-      <EntryPointSymbol>DllMain</EntryPointSymbol>
+      <EntryPointSymbol>DllMain</EntryPointSymbol>
+
     </Link>
 
     <PostBuildEvent>
