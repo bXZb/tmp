@@ -81,3 +81,21 @@ jobs:
         with:
           name: csm-exe
           path: p3/CallStackMasker/x64/Release/
+
+  vncdll:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: msbuild vncdll (rsmudge fork of the MSF TightVNC reflective server)
+        shell: pwsh
+        run: |
+          $msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installerswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+          & $msbuild p3ncdllncdll.sln /p:Configuration=Release /p:Platform=x64 /m /v:m
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          & $msbuild p3ncdllncdll.sln /p:Configuration=Release /p:Platform=Win32 /m /v:m
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          Get-ChildItem -Recurse p3ncdll -Include *.dll | Format-Table FullName,Length
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vncdll-dlls
+          path: p3/vncdll/winvnc/Release*/
