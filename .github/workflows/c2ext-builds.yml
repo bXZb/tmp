@@ -12,7 +12,7 @@ jobs:
         run: |
           mkdir -p out
           cd p3/c2ext/udc2-vs/udc2-bof-vs
-          sed -i 's/<Windows.h>/<windows.h>/g' udc2_bof.cpp
+          sed -i -e 's/<Windows.h>/<windows.h>/g' -e 's#base\\helpers.h#base/helpers.h#g' -e 's#\\#/#g' udc2_bof.cpp
           x86_64-w64-mingw32-g++ -c -std=c++20 -fno-exceptions -fno-rtti -fno-stack-protector -O2 \
             udc2_bof.cpp -o $GITHUB_WORKSPACE/out/udc2.x64.o
           i686-w64-mingw32-g++ -c -std=c++20 -fno-exceptions -fno-rtti -fno-stack-protector -O2 \
@@ -50,7 +50,7 @@ jobs:
         run: |
           mkdir -p out
           cd p3/c2ext/icmp-udc2/icmp-udc2-bof
-          sed -i 's/<Windows.h>/<windows.h>/g' icmp_udc2_bof.cpp
+          sed -i -e 's/<Windows.h>/<windows.h>/g' -e 's/<IcmpAPI.h>/<icmpapi.h>/g' icmp_udc2_bof.cpp
           grep -n "serverAddr" icmp_udc2_bof.cpp | head -4
           x86_64-w64-mingw32-g++ -c -std=c++20 -fno-exceptions -fno-rtti -fno-stack-protector -O2 \
             icmp_udc2_bof.cpp -o $GITHUB_WORKSPACE/out/icmp_udc2.x64.o
