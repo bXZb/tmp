@@ -75,7 +75,7 @@ jobs:
       - name: locate MSVC cl
         shell: pwsh
         run: |
-          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installerswhere.exe" -latest -property installationPath
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer swhere.exe" -latest -property installationPath
           $cl = Get-ChildItem "$vs\VC\Tools\MSVC\*in\Hostx64d\cl.exe" | Select-Object -First 1 -ExpandProperty FullName
           "CL=$cl" | Out-File $env:GITHUB_ENV -Append
           Write-Host "cl at $cl"
