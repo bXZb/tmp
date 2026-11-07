@@ -12,11 +12,12 @@ jobs:
         run: |
           mkdir -p out
           cd p3/c2ext/udc2-vs/udc2-bof-vs
+          sed -i 's/<Windows.h>/<windows.h>/g' udc2_bof.cpp
           x86_64-w64-mingw32-g++ -c -std=c++20 -fno-exceptions -fno-rtti -fno-stack-protector -O2 \
-            udc2_bof.cpp -o ../../../../out/udc2.x64.o
+            udc2_bof.cpp -o $GITHUB_WORKSPACE/out/udc2.x64.o
           i686-w64-mingw32-g++ -c -std=c++20 -fno-exceptions -fno-rtti -fno-stack-protector -O2 \
-            udc2_bof.cpp -o ../../../../out/udc2.x86.o
-          ls -la ../../../../out/
+            udc2_bof.cpp -o $GITHUB_WORKSPACE/out/udc2.x86.o
+          ls -la $GITHUB_WORKSPACE/out/
       - uses: actions/upload-artifact@v4
         with:
           name: udc2-vs-bofs
@@ -30,11 +31,10 @@ jobs:
         run: sudo apt-get update -q && sudo apt-get install -y -q gcc-mingw-w64
       - name: build official extc2example quick client
         run: |
-          mkdir -p out
+          mkdir -p "$GITHUB_WORKSPACE/out"
           cd p3/c2ext/External-C2
-          i686-w64-mingw32-gcc -O2 extc2example.c -o ../../out/extc2example.exe -lws2_32
-          x86_64-w64-mingw32-gcc -O2 extc2example.c -o ../../out/extc2example64.exe -lws2_32
-          ls -la ../../out/
+          i686-w64-mingw32-gcc -O2 extc2example.c -o "$GITHUB_WORKSPACE/out/extc2example.exe" -lws2_32
+          x86_64-w64-mingw32-gcc -O2 extc2example.c -o "$GITHUB_WORKSPACE/out/extc2example64.exe" -lws2_32
       - uses: actions/upload-artifact@v4
         with:
           name: extc2-example-exe
@@ -50,12 +50,13 @@ jobs:
         run: |
           mkdir -p out
           cd p3/c2ext/icmp-udc2/icmp-udc2-bof
+          sed -i 's/<Windows.h>/<windows.h>/g' icmp_udc2_bof.cpp
           grep -n "serverAddr" icmp_udc2_bof.cpp | head -4
           x86_64-w64-mingw32-g++ -c -std=c++20 -fno-exceptions -fno-rtti -fno-stack-protector -O2 \
-            icmp_udc2_bof.cpp -o ../../../../out/icmp_udc2.x64.o
+            icmp_udc2_bof.cpp -o $GITHUB_WORKSPACE/out/icmp_udc2.x64.o
           i686-w64-mingw32-g++ -c -std=c++20 -fno-exceptions -fno-rtti -fno-stack-protector -O2 \
-            icmp_udc2_bof.cpp -o ../../../../out/icmp_udc2.x86.o
-          ls -la ../../../../out/
+            icmp_udc2_bof.cpp -o $GITHUB_WORKSPACE/out/icmp_udc2.x86.o
+          ls -la $GITHUB_WORKSPACE/out/
       - uses: actions/upload-artifact@v4
         with:
           name: icmp-udc2-bofs
@@ -73,11 +74,12 @@ jobs:
         run: |
           mkdir -p out
           cd p3/c2ext/s3-udc2
+          sed -i 's/i686-w64-mingw32-gcc/i686-w64-mingw32-g++/' build.rs
           cargo build --release
-          cp target/release/s3-udc2-relay ../../out/
-          cp target/release/s3-udc2-presign ../../out/
-          cp s3-udc2-bof/bofs/*.o ../../out/
-          ls -la ../../out/
+          cp target/release/s3-udc2-relay $GITHUB_WORKSPACE/out/
+          cp target/release/s3-udc2-presign $GITHUB_WORKSPACE/out/
+          cp s3-udc2-bof/bofs/*.o $GITHUB_WORKSPACE/out/
+          ls -la $GITHUB_WORKSPACE/out/
       - uses: actions/upload-artifact@v4
         with:
           name: s3-udc2-bins
