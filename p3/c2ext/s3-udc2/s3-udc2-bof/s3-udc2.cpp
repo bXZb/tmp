@@ -374,7 +374,7 @@ bool init() {
     return S.hSession != NULL;
 }
 
-void go(char* args, int len) {
+extern "C" __declspec(dllexport) void go(char* args, int len) {
     PUDC2_INFO funcs = (PUDC2_INFO)args;
     (void)len;
 
