@@ -33,8 +33,11 @@ jobs:
         run: |
           mkdir -p "$GITHUB_WORKSPACE/out"
           cd p3/c2ext/External-C2
-          i686-w64-mingw32-gcc -O2 extc2example.c -o "$GITHUB_WORKSPACE/out/extc2example.exe" -lws2_32
-          x86_64-w64-mingw32-gcc -O2 extc2example.c -o "$GITHUB_WORKSPACE/out/extc2example64.exe" -lws2_32
+          i686-w64-mingw32-gcc -O2 -static extc2example.c -o "$GITHUB_WORKSPACE/out/extc2example.exe" -lws2_32
+          x86_64-w64-mingw32-gcc -O2 -static extc2example.c -o "$GITHUB_WORKSPACE/out/extc2example64.exe" -lws2_32
+          echo "--- import table self-check ---"
+          i686-w64-mingw32-objdump -x "$GITHUB_WORKSPACE/out/extc2example.exe" | grep "DLL Name" || true
+          ls -la "$GITHUB_WORKSPACE/out"/
       - uses: actions/upload-artifact@v4
         with:
           name: extc2-example-exe
