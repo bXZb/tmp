@@ -54,6 +54,8 @@ jobs:
           mkdir -p out
           cd p3/c2ext/icmp-udc2/icmp-udc2-bof
           sed -i -e 's/<Windows.h>/<windows.h>/g' -e 's/<IcmpAPI.h>/<icmpapi.h>/g' icmp_udc2_bof.cpp
+          sed -i 's/gUdc2State.serverAddr = "127.0.0.1"/gUdc2State.serverAddr = "192.168.100.98"/' icmp_udc2_bof.cpp
+          grep -n "gUdc2State.serverAddr" icmp_udc2_bof.cpp | head -2
           grep -n "serverAddr" icmp_udc2_bof.cpp | head -4
           x86_64-w64-mingw32-g++ -c -std=c++20 -fno-exceptions -fno-rtti -fno-stack-protector -O2 \
             icmp_udc2_bof.cpp -o $GITHUB_WORKSPACE/out/icmp_udc2.x64.o
