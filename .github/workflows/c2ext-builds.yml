@@ -72,21 +72,15 @@ jobs:
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
-      - name: locate MSVC cl
-        shell: pwsh
-        run: |
-          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
-          $cl = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\Hostx64\x64\cl.exe" | Select-Object -First 1 -ExpandProperty FullName
-          "CL=$cl" | Out-File $env:GITHUB_ENV -Append
-          Write-Host "cl at $cl"
-      - name: build s3 patchable + migrate BOFs (MSVC /c, official Makefile.win flags)
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: build s3 patchable + migrate BOFs (MSVC /c)
         shell: pwsh
         run: |
           New-Item -Force -ItemType Directory out | Out-Null
           $inc = @("/Ip3\c2ext\s3-udc2\s3-udc2-bof")
-          & $env:CL /c /GS- /std:c++20 $inc "p3\c2ext\s3-udc2\s3-udc2-bof\s3-udc2-patchable.cpp" /Fo:"out\s3-udc2-patchable.x64.o"
+          cl /c /GS- /std:c++20 $inc "p3\c2ext\s3-udc2\s3-udc2-bof\s3-udc2-patchable.cpp" /Fo:"out\s3-udc2-patchable.x64.o"
           if ($LASTEXITCODE -ne 0) { Write-Host "FAILED patchable"; exit 1 }
-          & $env:CL /c /GS- /std:c++20 $inc "p3\c2ext\s3-udc2\s3-udc2-bof\s3-udc2-migrate.cpp" /Fo:"out\s3-udc2-migrate.x64.o"
+          cl /c /GS- /std:c++20 $inc "p3\c2ext\s3-udc2\s3-udc2-bof\s3-udc2-migrate.cpp" /Fo:"out\s3-udc2-migrate.x64.o"
           if ($LASTEXITCODE -ne 0) { Write-Host "FAILED migrate"; exit 1 }
           Get-ChildItem out | Format-Table Name,Length
       - uses: actions/upload-artifact@v4
