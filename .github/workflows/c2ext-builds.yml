@@ -78,6 +78,7 @@ jobs:
           mkdir -p out
           cd p3/c2ext/s3-udc2
           sed -i 's/i686-w64-mingw32-gcc/i686-w64-mingw32-g++/' build.rs
+          export CFLAGS="-fno-ident" CXXFLAGS="-fno-ident"
           cargo build --release
           cp target/release/s3-udc2-relay $GITHUB_WORKSPACE/out/
           cp target/release/s3-udc2-presign $GITHUB_WORKSPACE/out/
