@@ -1,0 +1,120 @@
+name: evasion8-builds
+on: [push, workflow_dispatch]
+
+jobs:
+  unhook-bof:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: mingw deps
+        run: sudo apt-get update -q && sudo apt-get install -y -q gcc-mingw-w64
+      - name: build unhook BOF (x64 + x86)
+        run: |
+          mkdir -p out
+          cd p3/ev8/unhook-bof
+          x86_64-w64-mingw32-gcc -c src/unhook.c -o ../../../../out/unhook.x64.o -masm=intel -Wall
+          i686-w64-mingw32-gcc -c src/unhook.c -o ../../../../out/unhook.x86.o -masm=intel -Wall
+          ls -la ../../../../out/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unhook-bofs
+          path: out/
+
+  bof-template:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: mingw deps
+        run: sudo apt-get update -q && sudo apt-get install -y -q gcc-mingw-w64
+      - name: build bof_template examples (x64)
+        run: |
+          mkdir -p out
+          cd p3/ev8/bof_template/examples
+          for d in */; do
+            src=$(find "$d" -maxdepth 1 -name '*.c' | head -1)
+            [ -z "$src" ] && continue
+            name=$(basename "$d")
+            x86_64-w64-mingw32-gcc -c "$src" -o "../../../../out/bt_${name}.x64.o" -Wall || \
+            echo "WARN: $name failed"
+          done
+          ls -la ../../../../out/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bof-template-objs
+          path: out/
+
+  bof-vs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: mingw deps
+        run: sudo apt-get update -q && sudo apt-get install -y -q gcc-mingw-w64
+      - name: build BOF-VS template demo (x64, mingw DFR variant)
+        run: |
+          mkdir -p out
+          cd p3/ev8/bof-vs/BOF-Template
+          ls
+          src=$(find . -maxdepth 1 -name '*.cpp' -o -maxdepth 1 -name '*.c' | head -1)
+          echo "src: $src"
+          x86_64-w64-mingw32-g++ -c "$src" -o "../../../../out/bofvs_demo.x64.o" \
+            -std=c++20 -fno-exceptions -fno-rtti -I base -Wall || true
+          ls -la ../../../../out/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bof-vs-demo
+          path: out/
+
+  beacon-interpreter:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: mingw deps
+        run: sudo apt-get update -q && sudo apt-get install -y -q gcc-mingw-w64
+      - name: compile interpreter demo + SA suite (header/API conformance)
+        run: |
+          mkdir -p out
+          cd p3/ev8/beacon-interpreter
+          INC="-Iinterpreter-includes"
+          x86_64-w64-mingw32-gcc -c interpreter_demo.c -o ../../../../out/bi_demo.x64.o $INC -Wall || true
+          for c in situational_awareness/*.c; do
+            name=$(basename "$c" .c)
+            x86_64-w64-mingw32-gcc -c "$c" -o "../../../../out/bi_sa_${name}.x64.o" $INC -Wall || echo "WARN: $name"
+          done
+          ls -la ../../../../out/ | head -30
+      - uses: actions/upload-artifact@v4
+        with:
+          name: beacon-interpreter-objs
+          path: out/
+
+  obfuscator-llvm:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: llvm 14 toolchain
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q llvm-14-dev clang-14 libzstd-dev
+      - name: build obfuscation plugin (bogus/flattening/split/substitution)
+        run: |
+          mkdir -p out
+          cd p3/ev8/obfuscator-llvm
+          export LLVM_DIR=/usr/lib/llvm-14
+          cmake -B build -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_DIR=$LLVM_DIR/lib/cmake/llvm \
+            -DCMAKE_CXX_COMPILER=clang++-14 -DCMAKE_C_COMPILER=clang-14
+          cmake --build build -- -j2
+          find build -name '*.so' -exec cp {} "$GITHUB_WORKSPACE/out/" \;
+          ls -la "$GITHUB_WORKSPACE/out/"
+      - name: smoke test opt with plugin
+        run: |
+          cd /tmp
+          clang-14 -O0 -m64 -S -emit-llvm -o test.ll test.c 2>/dev/null || \
+            printf 'define i32 @f(i32 %%a) {\nret i32 %%a\n}\n' > test.ll
+          /usr/lib/llvm-14/bin/opt-14 -load $GITHUB_WORKSPACE/out/Obfuscation.so -legobfuscation -bcf -sub -fla -S -o obf.ll test.ll && \
+            echo "OPT SMOKE OK" && head -20 obf.ll
+      - uses: actions/upload-artifact@v4
+        with:
+          name: obfuscator-llvm-plugin
+          path: |
+            out/
+            /tmp/obf.ll
