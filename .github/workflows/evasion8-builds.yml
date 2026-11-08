@@ -37,7 +37,7 @@ jobs:
             x86_64-w64-mingw32-gcc -c "$src" -o "../../../../out/bt_${name}.x64.o" -Wall || \
             echo "WARN: $name failed"
           done
-          ls -la ../../../../out/
+          ls -la "$GITHUB_WORKSPACE/out/"
       - uses: actions/upload-artifact@v4
         with:
           name: bof-template-objs
@@ -57,9 +57,9 @@ jobs:
           src=$(find . -maxdepth 1 -name '*.cpp' -o -maxdepth 1 -name '*.c' | head -1)
           echo "src: $src"
           sed -i 's#base\\helpers.h#base/helpers.h#g; s#<Windows.h>#<windows.h>#g' "$src"
-          x86_64-w64-mingw32-g++ -c "$src" -o "../../../../out/bofvs_demo.x64.o" \
+          x86_64-w64-mingw32-g++ -c "$src" -o "$(echo "$GITHUB_WORKSPACE")/out/bofvs_demo.x64.o" \
             -std=c++20 -fno-exceptions -fno-rtti -I base -I . -I utils -Wall
-          ls -la ../../../../out/
+          ls -la "$GITHUB_WORKSPACE/out/"
       - uses: actions/upload-artifact@v4
         with:
           name: bof-vs-demo
@@ -83,7 +83,7 @@ jobs:
             name=$(basename "$c" .c)
             x86_64-w64-mingw32-gcc -c "$c" -o "../../../../out/bi_sa_${name}.x64.o" $INC -Wall || echo "WARN: $name"
           done
-          ls -la ../../../../out/ | head -30
+          ls -la "$GITHUB_WORKSPACE/out/" | head -30
       - uses: actions/upload-artifact@v4
         with:
           name: beacon-interpreter-objs
