@@ -51,7 +51,7 @@ jobs:
         run: sudo apt-get update -q && sudo apt-get install -y -q gcc-mingw-w64
       - name: build BOF-VS template demo (x64, mingw DFR variant)
         run: |
-          mkdir -p out
+          mkdir -p "$GITHUB_WORKSPACE/out"
           cd p3/ev8/bof-vs/BOF-Template
           ls
           src=$(find . -maxdepth 1 -name '*.cpp' -o -maxdepth 1 -name '*.c' | head -1)
