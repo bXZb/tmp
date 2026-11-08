@@ -57,6 +57,8 @@ jobs:
           src=$(find . -maxdepth 1 -name '*.cpp' -o -maxdepth 1 -name '*.c' | head -1)
           echo "src: $src"
           sed -i 's#base\\helpers.h#base/helpers.h#g; s#<Windows.h>#<windows.h>#g' "$src"
+          tr '\' '/' < "$src" > "$src.fix" && mv "$src.fix" "$src"
+          sed -i 's/<Windows.h>/<windows.h>/g' "$src"
           x86_64-w64-mingw32-g++ -c "$src" -o "$(echo "$GITHUB_WORKSPACE")/out/bofvs_demo.x64.o" \
             -std=c++20 -fno-exceptions -fno-rtti -I base -I . -I utils -Wall
           ls -la "$GITHUB_WORKSPACE/out/"
