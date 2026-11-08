@@ -57,7 +57,7 @@ jobs:
           src=$(find . -maxdepth 1 -name '*.cpp' -o -maxdepth 1 -name '*.c' | head -1)
           echo "src: $src"
           x86_64-w64-mingw32-g++ -c "$src" -o "../../../../out/bofvs_demo.x64.o" \
-            -std=c++20 -fno-exceptions -fno-rtti -I base -Wall || true
+            -std=c++20 -fno-exceptions -fno-rtti -I base -I . -I utils -Wall || true
           ls -la ../../../../out/
       - uses: actions/upload-artifact@v4
         with:
