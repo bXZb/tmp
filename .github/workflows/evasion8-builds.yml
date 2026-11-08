@@ -107,11 +107,14 @@ jobs:
           ls -la "$GITHUB_WORKSPACE/out/"
       - name: smoke test opt with plugin
         run: |
-          cd /tmp
-          clang-14 -O0 -m64 -S -emit-llvm -o test.ll test.c 2>/dev/null || \
-            printf 'define i32 @f(i32 %%a) {\nret i32 %%a\n}\n' > test.ll
-          /usr/lib/llvm-14/bin/opt-14 -load $GITHUB_WORKSPACE/out/Obfuscation.so -legobfuscation -bcf -sub -fla -S -o obf.ll test.ll && \
-            echo "OPT SMOKE OK" && head -20 obf.ll
+          printf 'int target_func(int a){return a*3+1;}' > /tmp/test.c
+          echo 'int main(void){return target_func(2);}' >> /tmp/test.c
+          clang-14 -O0 -m64 -S -emit-llvm -o /tmp/test.ll /tmp/test.c
+          PLUGIN=$(find "$GITHUB_WORKSPACE/p3/ev8/obfuscator-llvm/build" -name 'LLVMObfuscator.so' | head -1)
+          echo "plugin: $PLUGIN"
+          /usr/lib/llvm-14/bin/opt-14 -load "$PLUGIN" -legobfuscation -sub -fla -bcf -S -o /tmp/obf.ll /tmp/test.ll && \
+            echo "OPT SMOKE OK (obfuscated IR lines: $(wc -l < /tmp/obf.ll))"
+          cp /tmp/obf.ll "$GITHUB_WORKSPACE/out/obf_smoke.ll"
       - uses: actions/upload-artifact@v4
         with:
           name: obfuscator-llvm-plugin
