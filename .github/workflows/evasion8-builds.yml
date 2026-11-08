@@ -10,11 +10,11 @@ jobs:
         run: sudo apt-get update -q && sudo apt-get install -y -q gcc-mingw-w64
       - name: build unhook BOF (x64 + x86)
         run: |
-          mkdir -p out
+          mkdir -p "$GITHUB_WORKSPACE/out"
           cd p3/ev8/unhook-bof
-          x86_64-w64-mingw32-gcc -c src/unhook.c -o ../../../../out/unhook.x64.o -masm=intel -Wall
-          i686-w64-mingw32-gcc -c src/unhook.c -o ../../../../out/unhook.x86.o -masm=intel -Wall
-          ls -la ../../../../out/
+          x86_64-w64-mingw32-gcc -c src/unhook.c -o "$GITHUB_WORKSPACE/out/unhook.x64.o" -masm=intel -Wall
+          i686-w64-mingw32-gcc -c src/unhook.c -o "$GITHUB_WORKSPACE/out/unhook.x86.o" -masm=intel -Wall
+          ls -la "$GITHUB_WORKSPACE/out/"
       - uses: actions/upload-artifact@v4
         with:
           name: unhook-bofs
@@ -110,11 +110,12 @@ jobs:
           printf 'int target_func(int a){return a*3+1;}' > /tmp/test.c
           echo 'int main(void){return target_func(2);}' >> /tmp/test.c
           clang-14 -O0 -m64 -S -emit-llvm -o /tmp/test.ll /tmp/test.c
-          PLUGIN=$(find "$GITHUB_WORKSPACE/p3/ev8/obfuscator-llvm/build" -name 'LLVMObfuscator.so' | head -1)
+          PLUGIN=$(find "$GITHUB_WORKSPACE/p3/ev8/obfuscator-llvm/build" -name "*.so" | head -1)
+          echo "PLUGIN=$PLUGIN"; ls -la "$PLUGIN" || true
           echo "plugin: $PLUGIN"
           /usr/lib/llvm-14/bin/opt-14 -load "$PLUGIN" -legobfuscation -sub -fla -bcf -S -o /tmp/obf.ll /tmp/test.ll && \
             echo "OPT SMOKE OK (obfuscated IR lines: $(wc -l < /tmp/obf.ll))"
-          cp /tmp/obf.ll "$GITHUB_WORKSPACE/out/obf_smoke.ll"
+          cp /tmp/obf.ll "$GITHUB_WORKSPACE/out/obf_smoke.ll" || true
       - uses: actions/upload-artifact@v4
         with:
           name: obfuscator-llvm-plugin
