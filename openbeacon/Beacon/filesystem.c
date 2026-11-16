@@ -111,7 +111,7 @@ void FilesystemList(char* buffer, int length)
 {
 #define MAX_FILENAME 0x4000
 	char* filename = malloc(MAX_FILENAME);
-	*filename = { 0 };
+	*filename = 0;
 
 	datap parser;
 	BeaconDataParse(&parser, buffer, length);

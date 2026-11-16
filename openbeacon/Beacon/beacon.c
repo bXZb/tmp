@@ -18,6 +18,7 @@
 #include "metadata.h"
 #include "network.h"
 #include "self.h"
+#include "strategy.h"
 #include "transform.h"
 #include "utils.h"
 
@@ -28,6 +29,8 @@
 #define OB_AGENT     "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0)"
 
 void TaskProcess(char* buffer, int length);
+extern int gSleepTime;
+extern int gJitter;
 
 /* network.c globals (non-static) - the reply buffer NetworkPost flushes */
 extern int gPostBufferLength;
