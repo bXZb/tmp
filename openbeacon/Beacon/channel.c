@@ -447,7 +447,7 @@ void ChannelHandleActivity()
 				}
 			} else
 			{
-				int type;
+				int type = CALLBACK_CLOSE;
 				if (FD_ISSET(sock, &exceptfds))
 				{
 					channel->state = CHANNEL_STATE_0;
@@ -463,7 +463,7 @@ void ChannelHandleActivity()
 					sock = accept(channel->socket, NULL, NULL);
 					channel->socket = sock;
 
-					if (socket == INVALID_HANDLE_VALUE)
+					if (sock == INVALID_SOCKET)
 					{
 						channel->state = CHANNEL_STATE_0;
 						type = CALLBACK_CLOSE;

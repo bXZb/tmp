@@ -33,7 +33,7 @@ jobs:
           dir /s /b deps\libtommath\*.c | findstr /v /i /c:"demo" /c:"test" /c:"mersenne.c" /c:"2kprime.c" /c:"drprime.c" /c:"pprime.c" /c:"tune.c" /c:"mont.c" >> allsrc.txt
           for %%f in (openbeacon\Beacon\*.c) do @(echo %%f | findstr /v /i "strategy_ main.c" >> allsrc.txt)
           mkdir obout
-          cl /nologo /W0 /LD /GS- /O2 /std:c17 /I deps\libtomcrypt\src\headers /I deps\libtommath /I openbeacon\Beacon /D_CRT_SECURE_NO_WARNINGS /DLTM_DESC /DLTC_HASH_HELPERS /DLTC_HMAC /DLTC_SOURCE /DLTC_NO_SHA3 /Foobout\ @allsrc.txt /Z7 /Feopenbeacon.x64.dll /link /MAP:openbeacon.x64.map /MAPINFO:EXPORTS advapi32.lib wininet.lib crypt32.lib || exit /b 1
+          cl /nologo /W0 /LD /GS- /O2 /std:c17 /I deps\libtomcrypt\src\headers /I deps\libtommath /I openbeacon\Beacon /D_CRT_SECURE_NO_WARNINGS /DLTM_DESC /DLTC_HASH_HELPERS /DLTC_HMAC /DLTC_SOURCE /DLTC_NO_SHA3 /Foobout\ @allsrc.txt /Z7 /Feopenbeacon.x64.dll /link /DEBUG /MAP:openbeacon.x64.map /MAPINFO:EXPORTS advapi32.lib wininet.lib crypt32.lib || exit /b 1
           if not exist openbeacon.x64.dll exit /b 1
 
       - name: Verify DLL
