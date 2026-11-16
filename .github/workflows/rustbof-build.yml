@@ -13,22 +13,30 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install mingw + nightly + cargo-make
+      - name: Install mingw + nightly
         run: |
           sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
           rustup toolchain install nightly --profile minimal
           rustup component add rust-src --toolchain nightly
           rustup target add x86_64-pc-windows-gnu --toolchain nightly
-          cargo install cargo-make --locked || true
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      - name: Build x64 COFF
+      - name: Build x64 COFF (no cargo-make)
+        shell: bash
         run: |
           cd rustbof
-          # modern cargo deletes intermediate .o after linking; save-temps keeps
-          # the CGU objects the combine-objs task globs from deps/
-          MINGW_X64_PREFIX=x86_64-w64-mingw32- cargo make build-x64
-          MINGW_X64_PREFIX=x86_64-w64-mingw32- cargo make strip-uneeded
-          ls -la rustbof.x64.o
+          # 1. linker script from mingw ld defaults (rust_bof's recipe)
+          x86_64-w64-mingw32-ld -i --verbose | sed -n '/^======/, /^======/p' | grep -v '=======' | sed 's/\(*(.rdata)\)/__rdata_start__ = .;\n\1\n*(.rdata$.refptr.*)/' | sed 's/\(*(.text)\)/__text_start__ = .;\n\1/' | sed 's/\(*(.data)\)/__data_start__ = .;\n\1/' > linker_script.ld
+          # 2. build the workspace crate for windows-gnu
+          cargo +nightly build -p rustbof --target x86_64-pc-windows-gnu --release
+          # 3. harvest: extract CGU objects from every rlib (skip host proc-macro)
+          DEPS=target/x86_64-pc-windows-gnu/release/deps
+          mkdir -p allobj && cd allobj
+          find ../target/x86_64-pc-windows-gnu -name "lib*.rlib" | grep -v macro > rlibs.txt
+          cat rlibs.txt
+          for a in $(cat rlibs.txt); do ar x "$a"; done
+          # 4. relocatable link with gc-sections, entrypoint root
+          x86_64-w64-mingw32-ld -T ../../linker_script.ld --gc-sections -u entrypoint -i *.o -o ../rustbof.x64.o
+          x86_64-w64-mingw32-strip --strip-unneeded ../rustbof.x64.o
+          ls -la ../rustbof.x64.o
       - uses: actions/upload-artifact@v4
         with:
           name: rustbof-x64
