@@ -34,7 +34,7 @@ jobs:
           cat rlibs.txt
           for a in $(cat rlibs.txt); do ar x "$a"; done
           # 4. relocatable link with gc-sections, entrypoint root
-          x86_64-w64-mingw32-ld -T ../../linker_script.ld --gc-sections -u entrypoint -i *.o -o ../rustbof.x64.o
+          x86_64-w64-mingw32-ld -T ../linker_script.ld --gc-sections -u entrypoint -i *.o -o ../rustbof.x64.o
           x86_64-w64-mingw32-strip --strip-unneeded ../rustbof.x64.o
           ls -la ../rustbof.x64.o
       - uses: actions/upload-artifact@v4
