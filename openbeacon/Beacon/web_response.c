@@ -83,7 +83,7 @@ void WebResponseThread(WEB_RESPONSE* webResponse)
 		send(acceptSocket, webResponse->content, webResponse->contentLength, 0);
 
 		WebResponseDestroy(webResponse);
-		closesocket(acceptSocket);
+		closesocket(listenSocket);
 	}
 
 	--gThreadsActive;
@@ -92,25 +92,25 @@ void WebResponseThread(WEB_RESPONSE* webResponse)
 void WebServerInit(short port, char* content, int contentLength)
 {
 	NetworkInit();
-	SOCKET socket = socket(AF_INET, SOCK_STREAM, IPPROTO_HOPOPTS);
+	SOCKET listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_HOPOPTS);
 	SOCKET acceptSocket = INVALID_SOCKET;
-	if (socket == INVALID_SOCKET)
-		closesocket(acceptSocket);
+	if (listenSocket == INVALID_SOCKET)
+		closesocket(listenSocket);
 
 	struct sockaddr_in service;
 	service.sin_family = AF_INET;
 	service.sin_addr.s_addr = LOCALHOST;
 	service.sin_port = htons(port);
 
-	int bindResult = bind(socket, (SOCKADDR*)&service, sizeof(service));
-	acceptSocket = socket;
+	int bindResult = bind(listenSocket, (SOCKADDR*)&service, sizeof(service));
+	acceptSocket = listenSocket;
 	if (bindResult == SOCKET_ERROR)
-		closesocket(acceptSocket);
+		closesocket(listenSocket);
 
-	int listenResult = listen(socket, 120);
-	acceptSocket = socket;
+	int listenResult = listen(listenSocket, 120);
+	acceptSocket = listenSocket;
 	if (listenResult == SOCKET_ERROR)
-		closesocket(acceptSocket);
+		closesocket(listenSocket);
 
 	WEB_RESPONSE* webResponse = WebResponseInit(acceptSocket, content, contentLength);
 	CreateThreadEx(WebResponseThread, webResponse);
