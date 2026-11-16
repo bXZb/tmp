@@ -18,7 +18,6 @@
 #include "metadata.h"
 #include "network.h"
 #include "self.h"
-#include "task.h"
 #include "transform.h"
 #include "utils.h"
 
@@ -27,6 +26,8 @@
 #define OB_MAX_GET   (1024 * 512)
 #define OB_MAX_POST  (1024 * 1024)
 #define OB_AGENT     "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0)"
+
+void TaskProcess(char* buffer, int length);
 
 /* network.c globals (non-static) - the reply buffer NetworkPost flushes */
 extern int gPostBufferLength;
