@@ -29,7 +29,7 @@ jobs:
       - name: Build DLL
         shell: cmd
         run: |
-          powershell -NoProfile -Command "(Get-ChildItem deps\libtomcrypt\src -Recurse -Filter *.c | Where-Object { $_.FullName -notmatch 'demo|test' } | ForEach-Object { $_.FullName }) + (Get-ChildItem deps\libtommath -Filter *.c | ForEach-Object { $_.FullName }) + (Get-ChildItem openbeacon\Beacon -Filter *.c | Where-Object { $_.Name -notmatch '^strategy_' -and $_.Name -ne 'main.c' } | ForEach-Object { $_.FullName }) | Set-Content -Encoding ascii allsrc.txt"
+          powershell -NoProfile -Command "(Get-ChildItem deps\libtomcrypt\src -Recurse -Filter *.c | Where-Object { $_.FullName -notmatch 'demo|test' } | ForEach-Object { $_.FullName }) + (Get-ChildItem deps\libtommath -Filter *.c | ForEach-Object { $_.FullName }) + (Get-ChildItem openbeacon\Beacon -Filter *.c | Where-Object { $_.Name -notmatch '^strategy_' -and $_.Name -ne 'main.c' } | ForEach-Object { $_.FullName }) | Where-Object { $_.Trim() -ne '' } | Set-Content -Encoding ascii allsrc.txt"
           powershell -NoProfile -Command "(Get-Content allsrc.txt | Measure-Object -Line).Lines"
           mkdir obout
           cl /nologo /W0 /LD /GS- /O2 /std:c17 /I deps\libtomcrypt\src\headers /I deps\libtommath /I openbeacon\Beacon /D_CRT_SECURE_NO_WARNINGS /DLTM_DESC /DLTC_HASH_HELPERS /DLTC_HMAC /DLTC_SOURCE /Fo obout\ @allsrc.txt /Feopenbeacon.x64.dll || exit /b 1
