@@ -55,6 +55,8 @@
 #define S_C2_RECOVER   ((char*)ob_c2_recover)    /* server output print = identity */
 #define S_C2_POSTREQ   ((char*)ob_c2_postreq)    /* POST: id param + print body */
 #define S_C2_VERB_POST "POST"
+#define S_URIS_GET  "/activity /pixel.gif /updates.rss"
+#define S_URI_POST  "/submit.php"
 
 /* ---- headers ---- */
 #define S_HOST_HEADER    ""

