@@ -8,7 +8,19 @@ MINGW_X64_PREFIX = "x86_64-w64-mingw32-"
 BOF_NAME = "rustbof"
 
 [tasks.combine-objs]
-script = "${MINGW_PREFIX}ld -T linker_script.ld --gc-sections -u ${ENTRY_PREFIX}entrypoint -i target/${RUST_TARGET}/release/deps/*.o -o ${BOF_NAME}.${BOF_ARCH}.o"
+# modern cargo deletes intermediate CGU objects from deps/ after producing
+# the rlib; extract them from the rlib archives instead (rlib = COFF ar of
+# the CGU objects). proc-macro crate is host-ELF, excluded by name.
+script = """
+cd target/${RUST_TARGET}/release/deps
+for a in lib*.rlib; do
+  case "$a" in
+    *macro*) ;;
+    *) ar x "$a" ;;
+  esac
+done
+${MINGW_PREFIX}ld -T ../../../../linker_script.ld --gc-sections -u ${ENTRY_PREFIX}entrypoint -i *.o -o ../../../../rustbof.${BOF_ARCH}.o
+"""
 dependencies = ["generate-linker-script", "build"]
 
 [tasks.strip-uneeded]

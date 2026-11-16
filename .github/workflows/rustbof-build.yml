@@ -26,7 +26,6 @@ jobs:
           cd rustbof
           # modern cargo deletes intermediate .o after linking; save-temps keeps
           # the CGU objects the combine-objs task globs from deps/
-          export RUSTFLAGS="-Csave-temps=y"
           MINGW_X64_PREFIX=x86_64-w64-mingw32- cargo make build-x64
           MINGW_X64_PREFIX=x86_64-w64-mingw32- cargo make strip-uneeded
           ls -la rustbof.x64.o
