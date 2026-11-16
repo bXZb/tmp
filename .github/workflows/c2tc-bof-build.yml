@@ -1,0 +1,30 @@
+name: c2tc-bof-build
+
+on:
+  push:
+    paths:
+      - "c2tc-bof/**"
+      - ".github/workflows/c2tc-bof-build.yml"
+  workflow_dispatch:
+
+jobs:
+  bofs:
+    name: C2-Tool-Collection BOFs
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mingw
+        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 binutils-mingw-w64-x86-64
+      - name: Build all BOFs
+        run: |
+          cd c2tc-bof/BOF
+          mkdir -p out
+          for d in */SOURCE; do
+            (cd "$d" && make || echo "FAIL $d")
+          done
+          find . -name "*.x64.o" -exec cp {} out/ \; 2>/dev/null || true
+          ls -la out/ | head -30
+      - uses: actions/upload-artifact@v4
+        with:
+          name: c2tc-bofs
+          path: c2tc-bof/BOF/out/
