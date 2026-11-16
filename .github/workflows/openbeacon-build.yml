@@ -31,12 +31,13 @@ jobs:
         run: |
           dir /s /b deps\libtomcrypt\src\c\*.c | findstr /v /i "demo test" > ltcsources.txt
           dir /s /b deps\libtommath\*.c | findstr /v /i "demo test" > ltmsources.txt
+          powershell -NoProfile -Command "Get-ChildItem openbeacon\Beacon -Filter *.c | Where-Object { $_.Name -notmatch '^strategy_' -and $_.Name -ne 'main.c' } | ForEach-Object { $_.FullName } > obsources.txt"
           cl /nologo /W0 /c /GS- /O2 /I deps\libtomcrypt\src\headers /I deps\libtommath /DLTC_NO_PROTOTYPES /DLTC_SOURCE /DLTM_DESC /DLTC_NO_HASHES /DLTC_SHA256 /DLTC_HASH_HELPERS /DLTC_NO_MACS /DLTC_HMAC @ltcsources.txt @ltmsources.txt /Fo libtom\ || exit /b 1
-          cl /nologo /W0 /c /GS- /O2 /std:c17 /I openbeacon\Beacon /I deps\libtomcrypt\src\headers /I deps\libtommath /D_CRT_SECURE_NO_WARNINGS /DLTM_DESC /DLTC_NO_HASHES /DLTC_SHA256 /DLTC_HASH_HELPERS /DLTC_NO_MACS /DLTC_HMAC /DLTC_SOURCE /Fo obc\ openbeacon\Beacon\*.c || exit /b 1
+          cl /nologo /W0 /c /GS- /O2 /std:c17 /I openbeacon\Beacon /I deps\libtomcrypt\src\headers /I deps\libtommath /D_CRT_SECURE_NO_WARNINGS /DLTM_DESC /DLTC_NO_HASHES /DLTC_SHA256 /DLTC_HASH_HELPERS /DLTC_NO_MACS /DLTC_HMAC /DLTC_SOURCE /Fo obc\ @obsources.txt || exit /b 1
           link /nologo /DLL /OUT:openbeacon.x64.dll libtom\*.obj obc\*.obj ws2_32.lib advapi32.lib ntdll.lib dbghelp.lib user32.lib bcrypt.lib || exit /b 1
           if not exist openbeacon.x64.dll exit /b 1
 
-      - name: Verify buildstamp
+      - name: Verify DLL
         shell: pwsh
         run: |
           Get-Item openbeacon.x64.dll | Format-List Length

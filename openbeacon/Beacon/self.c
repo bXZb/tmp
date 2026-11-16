@@ -51,7 +51,7 @@ BOOL BeaconIsExpired()
 	return FALSE;
 }
 
-[[noreturn]] void BeaconInterrupt()
+void BeaconInterrupt()
 {
 	if(S_EXIT_FUNK == TRUE)
 	{
