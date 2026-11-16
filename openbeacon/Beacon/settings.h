@@ -10,7 +10,7 @@
 
 /* ---- host / port ---- */
 #define S_DOMAINS      "192.168.100.200"
-#define S_PORT_HTTP    8082
+#define S_PORT_HTTP    8083
 #define S_PROTOCOL     0            /* PROTOCOL_HTTP */
 #define S_DOMAIN_STRATEGY 0         /* STRATEGY_DEFAULT */
 #define S_MAX_RETRY_STRATEGY_ATTEMPTS 0
