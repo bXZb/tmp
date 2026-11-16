@@ -159,6 +159,17 @@ BOOL toWideChar(char* src, wchar_t* dst, int max) {
 	return MultiByteToWideChar(CP_ACP, 0, src, -1, dst, wlen) == wlen;
 }
 
+
+/* libtomcrypt algorithm self-test helper (referenced by the algorithm
+ * cores; returning 0 = vectors match, keeping the self-tests silent) */
+int compare_testvector(const void* is, const unsigned long is_len,
+                       const void* should, const unsigned long should_len,
+                       const char* what, int which) {
+	if (is_len != should_len)
+		return -1;
+	return memcmp(is, should, (size_t)is_len) == 0 ? 0 : -1;
+}
+
 __declspec(dllexport) void __cdecl BeaconEntry(LPVOID lpReserved) {
 	ObStart(NULL);
 }
