@@ -12,14 +12,15 @@ BOF_NAME = "rustbof"
 # the rlib; extract them from the rlib archives instead (rlib = COFF ar of
 # the CGU objects). proc-macro crate is host-ELF, excluded by name.
 script = """
-cd target/${RUST_TARGET}/release/deps
+DEPS=$(find target -type d -name deps | head -1)
+cd "$DEPS"
 for a in lib*.rlib; do
   case "$a" in
     *macro*) ;;
     *) ar x "$a" ;;
   esac
 done
-${MINGW_PREFIX}ld -T ../../../../linker_script.ld --gc-sections -u ${ENTRY_PREFIX}entrypoint -i *.o -o ../../../../rustbof.${BOF_ARCH}.o
+${MINGW_PREFIX}ld -T "$OLDPWD/linker_script.ld" --gc-sections -u ${ENTRY_PREFIX}entrypoint -i *.o -o "$OLDPWD/rustbof.${BOF_ARCH}.o"
 """
 dependencies = ["generate-linker-script", "build"]
 
