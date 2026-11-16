@@ -124,7 +124,7 @@ static DWORD WINAPI ObMain(LPVOID unused) {
 			}
 			InternetCloseHandle(ho);
 		}
-	
+	}
 STRATEGY strategy = { 0, 0, 0 };
 
 	while (TRUE) {
