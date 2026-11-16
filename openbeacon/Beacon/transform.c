@@ -42,6 +42,7 @@ void TransformInit(TRANSFORM* transform, int size)
 	transform->transformed = BeaconDataPtr(parser, transform->outputLength);
 	transform->temp = BeaconDataPtr(parser, transform->outputLength);
 	transform->bodyLength = 0;
+	transform->parser = parser; /* VENDOR FIX: was never assigned - TransformDestroy freed NULL (segfault on first GET) */
 }
 
 void TransformEncode(TRANSFORM* transform,
