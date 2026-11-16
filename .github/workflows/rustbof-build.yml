@@ -1,0 +1,33 @@
+name: rustbof-build
+
+on:
+  push:
+    paths:
+      - "rustbof/**"
+      - ".github/workflows/rustbof-build.yml"
+  workflow_dispatch:
+
+jobs:
+  rustbof:
+    name: rust_bof x64 COFF
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mingw + nightly + cargo-make
+        run: |
+          sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
+          rustup toolchain install nightly --profile minimal
+          rustup component add rust-src --toolchain nightly
+          rustup target add x86_64-pc-windows-gnu --toolchain nightly
+          cargo install cargo-make --locked || true
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Build x64 COFF
+        run: |
+          cd rustbof
+          MINGW_X64_PREFIX=x86_64-w64-mingw32- cargo make build-x64
+          MINGW_X64_PREFIX=x86_64-w64-mingw32- cargo make strip-uneeded
+          ls -la rustbof.x64.o
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rustbof-x64
+          path: rustbof/rustbof.x64.o

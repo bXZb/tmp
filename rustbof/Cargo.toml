@@ -1,0 +1,26 @@
+[workspace]
+members = [
+    "rustbof",
+    "libs/bofalloc",
+    "libs/bofentry",
+    "libs/bofhelper"
+, "libs/bofentry_macro"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.1"
+authors = ["wumb0"]
+description = "Cobalt strike BOFs in Rust"
+edition = "2021"
+
+[profile.dev]
+panic = "abort"
+opt-level = "z"
+codegen-units = 1
+strip = true
+
+[profile.release]
+panic = "abort"
+opt-level = "z"
+codegen-units = 1
+strip = true
