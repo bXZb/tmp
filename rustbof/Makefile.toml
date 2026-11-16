@@ -12,7 +12,11 @@ BOF_NAME = "rustbof"
 # the rlib; extract them from the rlib archives instead (rlib = COFF ar of
 # the CGU objects). proc-macro crate is host-ELF, excluded by name.
 script = """
-DEPS=$(find target -type d -name deps | head -1)
+pwd
+ls -la
+find . -name "*.rlib" | head -5
+find . -type d -name deps | head -3
+DEPS=$(find . -type d -name deps -path "*pc-windows-gnu*" | head -1)
 cd "$DEPS"
 for a in lib*.rlib; do
   case "$a" in
