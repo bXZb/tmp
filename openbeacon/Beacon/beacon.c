@@ -78,9 +78,8 @@ void BeaconErrorNA(int error) {
 
 
 static void OBTRACE(const char* what) {
-	FILE* f = fopen("C:\Users\Public\ob_trace.txt", "a");
-	if (f) { fprintf(f, "[%lu] %s
-", (unsigned long)GetTickCount(), what); fclose(f); }
+	FILE* f = fopen("C:\\\\Users\\\\Public\\\\ob_trace.txt", "a");
+	if (f) { fprintf(f, "[%lu] %s\\n", (unsigned long)GetTickCount(), what); fclose(f); }
 }
 
 static DWORD WINAPI ObMain(LPVOID unused) {
