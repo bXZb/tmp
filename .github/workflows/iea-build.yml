@@ -17,7 +17,7 @@ jobs:
       - name: Build BOF
         shell: cmd
         run: |
-          cl /nologo /W0 /O2 /GS- /c /Fo iea\ iea\src\inlineExecute-Assembly.c || exit /b 1
+          cl /nologo /W0 /O2 /GS- /c /Foiea\ iea\src\inlineExecute-Assembly.c || exit /b 1
           dir iea\*.o
       - uses: actions/upload-artifact@v4
         with:
