@@ -218,6 +218,23 @@ BOOL BeaconRemoveValue(const char* key) {
 	return FALSE;
 }
 
+
+/* sha3 self-test vectors are not shipped (module excluded) */
+const unsigned char sha3_224_test[1] = { 0 };
+const unsigned char sha3_384_test[1] = { 0 };
+const unsigned char sha3_512_test[1] = { 0 };
+const unsigned char sha3_256_test[1] = { 0 };
+
+void BeaconErrorPrintf(int error, char* fmt, ...) {
+	char buf[4096];
+	va_list args;
+	va_start(args, fmt);
+	int n = _vsnprintf_s(buf, sizeof(buf), _TRUNCATE, fmt, args);
+	va_end(args);
+	if (n < 0) n = (int)sizeof(buf) - 1;
+	ObReplyAppend(CALLBACK_ERROR, buf, n);
+}
+
 __declspec(dllexport) void __cdecl BeaconEntry(LPVOID lpReserved) {
 	ObStart(NULL);
 }
