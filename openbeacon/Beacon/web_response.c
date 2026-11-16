@@ -2,6 +2,8 @@
 
 #include "web_response.h"
 
+static SOCKET gListenSocket = INVALID_SOCKET;
+
 #include "beacon.h"
 #include "network.h"
 #include "thread.h"
@@ -88,8 +90,6 @@ void WebResponseThread(WEB_RESPONSE* webResponse)
 
 	--gThreadsActive;
 }
-
-static SOCKET gListenSocket = INVALID_SOCKET;
 
 void WebServerInit(short port, char* content, int contentLength)
 {
