@@ -170,6 +170,54 @@ int compare_testvector(const void* is, const unsigned long is_len,
 	return memcmp(is, should, (size_t)is_len) == 0 ? 0 : -1;
 }
 
+
+void BeaconErrorS(int error, char* s1) {
+	if (s1 != NULL)
+		BeaconPrintf(CALLBACK_ERROR, "%s", s1);
+}
+
+void BeaconErrorDS(int error, int d1, char* s1) {
+	if (s1 != NULL)
+		BeaconPrintf(CALLBACK_ERROR, "%d %s", d1, s1);
+}
+
+/* key/value store (4.9 API) - in-memory table for kit BOFs */
+#define OB_MAX_VALUES 64
+static struct { char key[64]; void* ptr; } ob_values[OB_MAX_VALUES];
+
+BOOL BeaconAddValue(const char* key, void* ptr) {
+	for (int i = 0; i < OB_MAX_VALUES; i++) {
+		if (ob_values[i].key[0] == 0) {
+			strncpy(ob_values[i].key, key, 63);
+			ob_values[i].ptr = ptr;
+			return TRUE;
+		}
+		if (strcmp(ob_values[i].key, key) == 0) {
+			return FALSE; /* exists */
+		}
+	}
+	return FALSE;
+}
+
+void* BeaconGetValue(const char* key) {
+	for (int i = 0; i < OB_MAX_VALUES; i++) {
+		if (ob_values[i].key[0] != 0 && strcmp(ob_values[i].key, key) == 0)
+			return ob_values[i].ptr;
+	}
+	return NULL;
+}
+
+BOOL BeaconRemoveValue(const char* key) {
+	for (int i = 0; i < OB_MAX_VALUES; i++) {
+		if (ob_values[i].key[0] != 0 && strcmp(ob_values[i].key, key) == 0) {
+			ob_values[i].key[0] = 0;
+			ob_values[i].ptr = NULL;
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 __declspec(dllexport) void __cdecl BeaconEntry(LPVOID lpReserved) {
 	ObStart(NULL);
 }
