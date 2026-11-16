@@ -31,7 +31,7 @@ jobs:
           DEPS=target/x86_64-pc-windows-gnu/release/deps
           mkdir -p allobj && cd allobj
           find ../target/x86_64-pc-windows-gnu -name "lib*.rlib" | grep -v macro > rlibs.txt
-          SYSROOT=$(rustc --print=sysroot)
+          SYSROOT=$(rustc +nightly --print=sysroot)
           find "$SYSROOT/lib/rustlib/x86_64-pc-windows-gnu/lib" -name "lib*.rlib" | grep -v unwind >> rlibs.txt
           cat rlibs.txt
           for a in $(cat rlibs.txt); do ar x "$a"; done
