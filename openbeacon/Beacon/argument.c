@@ -8,8 +8,8 @@
 typedef struct _ARGUMENT_ENTRY
 {
 	BOOL isActive;
-	const char expandedCmd[8192];
-	const char expandedFullCmd[8192];
+	char expandedCmd[8192];
+	char expandedFullCmd[8192];
 	struct _ARGUMENT_ENTRY* next;
 } ARGUMENT_ENTRY;
 

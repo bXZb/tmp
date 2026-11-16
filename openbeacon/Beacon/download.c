@@ -77,7 +77,7 @@ void DownloadDo(char* buffer, int length)
 	}
 
 	DOWNLOAD_ENTRY* download = malloc(sizeof(DOWNLOAD_ENTRY));
-	*download = DOWNLOAD_ENTRY{
+	*download = (DOWNLOAD_ENTRY){
 		.fid = gDownloadFid++,
 		.remainingData = fileSize,
 		.file = file,
