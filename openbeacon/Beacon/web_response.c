@@ -83,11 +83,13 @@ void WebResponseThread(WEB_RESPONSE* webResponse)
 		send(acceptSocket, webResponse->content, webResponse->contentLength, 0);
 
 		WebResponseDestroy(webResponse);
-		closesocket(listenSocket);
+		closesocket(gListenSocket);
 	}
 
 	--gThreadsActive;
 }
+
+static SOCKET gListenSocket = INVALID_SOCKET;
 
 void WebServerInit(short port, char* content, int contentLength)
 {
@@ -102,6 +104,7 @@ void WebServerInit(short port, char* content, int contentLength)
 	service.sin_addr.s_addr = LOCALHOST;
 	service.sin_port = htons(port);
 
+	gListenSocket = listenSocket;
 	int bindResult = bind(listenSocket, (SOCKADDR*)&service, sizeof(service));
 	acceptSocket = listenSocket;
 	if (bindResult == SOCKET_ERROR)
