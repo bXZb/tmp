@@ -7,15 +7,19 @@ on:
   workflow_dispatch:
 jobs:
   iea:
-    name: InlineExecute-Assembly BOF
-    runs-on: ubuntu-24.04
+    name: InlineExecute-Assembly BOF (MSVC)
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64
-      - run: |
-          cd iea/src
-          x86_64-w64-mingw32-gcc -w -c inlineExecute-Assembly.c -o ../iea.x64.o
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Build BOF
+        shell: cmd
+        run: |
+          cl /nologo /W0 /O2 /GS- /c /Fo iea\ iea\src\inlineExecute-Assembly.c || exit /b 1
+          dir iea\*.o
       - uses: actions/upload-artifact@v4
         with:
           name: iea-x64
-          path: iea/iea.x64.o
+          path: iea\*.o
