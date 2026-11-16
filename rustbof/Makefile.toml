@@ -13,7 +13,7 @@ BOF_NAME = "rustbof"
 # the CGU objects). proc-macro crate is host-ELF, excluded by name.
 script = """
 mkdir -p allobj && cd allobj
-find ../target -name "lib*.rlib" | grep -v macro > rlibs.txt
+find ../target/x86_64-pc-windows-gnu -name "lib*.rlib" | grep -v macro > rlibs.txt
 for a in $(cat rlibs.txt); do ar x "$a"; done
 ${MINGW_PREFIX}ld -T ../linker_script.ld --gc-sections -u ${ENTRY_PREFIX}entrypoint -i *.o -o ../rustbof.${BOF_ARCH}.o
 """
