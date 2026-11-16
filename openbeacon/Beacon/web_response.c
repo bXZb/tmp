@@ -92,7 +92,7 @@ void WebResponseThread(WEB_RESPONSE* webResponse)
 void WebServerInit(short port, char* content, int contentLength)
 {
 	NetworkInit();
-	SOCKET socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_HOPOPTS);
+	SOCKET socket = socket(AF_INET, SOCK_STREAM, IPPROTO_HOPOPTS);
 	SOCKET acceptSocket = INVALID_SOCKET;
 	if (socket == INVALID_SOCKET)
 		closesocket(acceptSocket);
