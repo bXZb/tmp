@@ -29,7 +29,7 @@ jobs:
       - name: Build DLL
         shell: cmd
         run: |
-          dir /s /b deps\libtomcrypt\src\c\*.c | findstr /v /i "demo test" > allsrc.txt
+          dir /s /b deps\libtomcrypt\src\*.c | findstr /v /i "demo test" > allsrc.txt
           dir /s /b deps\libtommath\*.c | findstr /v /i "demo test" >> allsrc.txt
           for %%f in (openbeacon\Beacon\*.c) do @(echo %%f | findstr /v /i "strategy_ main.c" >> allsrc.txt)
           mkdir obout

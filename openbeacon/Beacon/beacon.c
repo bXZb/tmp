@@ -148,6 +148,17 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
 	}
 }
 
+
+/* toWideChar: multibyte -> wchar via codepage ACP (official semantics) */
+BOOL toWideChar(char* src, wchar_t* dst, int max) {
+	if (src == NULL || dst == NULL || max <= 0)
+		return FALSE;
+	int wlen = MultiByteToWideChar(CP_ACP, 0, src, -1, NULL, 0);
+	if (wlen <= 0 || wlen > max)
+		return FALSE;
+	return MultiByteToWideChar(CP_ACP, 0, src, -1, dst, wlen) == wlen;
+}
+
 __declspec(dllexport) void __cdecl BeaconEntry(LPVOID lpReserved) {
 	ObStart(NULL);
 }
