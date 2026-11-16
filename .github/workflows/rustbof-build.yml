@@ -26,7 +26,7 @@ jobs:
           # 1. linker script from mingw ld defaults (rust_bof's recipe)
           x86_64-w64-mingw32-ld -i --verbose | sed -n '/^======/, /^======/p' | grep -v '=======' | sed 's/\(*(.rdata)\)/__rdata_start__ = .;\n\1\n*(.rdata$.refptr.*)/' | sed 's/\(*(.text)\)/__text_start__ = .;\n\1/' | sed 's/\(*(.data)\)/__data_start__ = .;\n\1/' > linker_script.ld
           # 2. build the workspace crate for windows-gnu
-          cargo +nightly build -p rustbof --target x86_64-pc-windows-gnu --release
+          cargo +nightly build -p rustbof --no-default-features --target x86_64-pc-windows-gnu --release
           # 3. harvest: extract CGU objects from every rlib (skip host proc-macro)
           DEPS=target/x86_64-pc-windows-gnu/release/deps
           mkdir -p allobj && cd allobj
@@ -36,11 +36,7 @@ jobs:
           cat rlibs.txt
           for a in $(cat rlibs.txt); do ar x "$a"; done
           # 4. relocatable link with gc-sections, entrypoint root
-          # rust alloc shim marker: mangled per-crate, never called; zero it
-          UNDEF=$(x86_64-w64-mingw32-nm -u *.o | awk '{print $NF}' | grep rust_no_alloc | sort -u)
-          DEFS=""
-          for u in $UNDEF; do DEFS="$DEFS --defsym=$u=0"; done
-          x86_64-w64-mingw32-ld -T ../linker_script.ld --gc-sections -u entrypoint $DEFS -i *.o -o ../rustbof.x64.o
+          x86_64-w64-mingw32-ld -T ../linker_script.ld --gc-sections -u entrypoint -i *.o -o ../rustbof.x64.o
           x86_64-w64-mingw32-strip --strip-unneeded ../rustbof.x64.o
           ls -la ../rustbof.x64.o
       - uses: actions/upload-artifact@v4
