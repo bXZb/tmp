@@ -1,0 +1,46 @@
+name: openbeacon-build
+
+on:
+  push:
+    paths:
+      - "openbeacon/**"
+      - ".github/workflows/openbeacon-build.yml"
+  workflow_dispatch:
+
+jobs:
+  openbeacon-x64:
+    name: OpenBeacon x64 DLL
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSVC (x64)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Clone libtomcrypt + libtommath
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch develop https://github.com/libtom/libtomcrypt.git $env:GITHUB_WORKSPACE\deps\libtomcrypt
+          git clone --depth 1 --branch develop https://github.com/libtom/libtommath.git $env:GITHUB_WORKSPACE\deps\libtommath
+          Write-Host "cloned"
+
+      - name: Build DLL
+        shell: cmd
+        run: |
+          set INC=/I openbeacon\Beacon /I deps\libtomcrypt\src\headers /I deps\libtommath
+          cl /nologo /O2 /W0 /LD /GS- /Zc:wchar_t %INC% /D_CRT_SECURE_NO_WARNINGS /DLTM_DESC /DLTC_NO_HASHES /DLTC_SHA256 /DLTC_HASH_HELPERS /DLTC_NO_MACS /DLTC_HMAC /DLTC_SOURCE /Fo ob\ openbeacon\Beacon\*.c deps\libtomcrypt\src\*.c deps\libtommath\*.c /Fe openbeacon.x64.dll /Link /LIBPATH:"%WINDOWS_LIB_X64%" ws2_32.lib advapi32.lib ntdll.lib dbghelp.lib user32.lib bcrypt.lib
+
+      - name: Verify buildstamp
+        shell: pwsh
+        run: |
+          Get-Item openbeacon.x64.dll | Format-List Length
+          $bytes = [System.IO.File]::ReadAllBytes("openbeacon.x64.dll")
+          if ($bytes.Length -lt 200000) { throw "dll too small" }
+          Write-Host "dll ok"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openbeacon-x64
+          path: openbeacon.x64.dll
