@@ -122,7 +122,9 @@ static DWORD WINAPI ObMain(LPVOID unused) {
 		char* uriTok = strtok_s(uri, " ", &urisave2);
 		int n = -1;
 		while (uriTok != NULL) {
+			OBTRACE("main: GET attempt");
 			n = NetworkGet(uriTok, &gSession, data, OB_MAX_GET);
+			OBTRACE("main: GET returned");
 			if (n >= 0)
 				break;
 			uriTok = strtok_s(NULL, " ", &urisave2);
