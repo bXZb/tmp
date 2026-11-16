@@ -22,8 +22,8 @@ jobs:
       - name: Clone libtomcrypt + libtommath
         shell: pwsh
         run: |
-          git clone --depth 1 --branch 1.18.2 https://github.com/libtom/libtomcrypt.git $env:GITHUB_WORKSPACE\deps\libtomcrypt
-          git clone --depth 1 --branch 1.2.0 https://github.com/libtom/libtommath.git $env:GITHUB_WORKSPACE\deps\libtommath
+          git clone --depth 1 --branch v1.18.2 https://github.com/libtom/libtomcrypt.git $env:GITHUB_WORKSPACE\deps\libtomcrypt
+          git clone --depth 1 --branch v1.2.0 https://github.com/libtom/libtommath.git $env:GITHUB_WORKSPACE\deps\libtommath
           Write-Host "cloned"
 
       - name: Build DLL
