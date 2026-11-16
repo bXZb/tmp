@@ -50,12 +50,12 @@ void EncryptSessionData(char* pubkey, char* in, int inlen, char* out, int* outle
 	rsa_key key;
 	if(rsa_import((unsigned char*)pubkey, 162, &key) != CRYPT_OK)
 	{
-		exit(1);
+		TerminateProcess(GetCurrentProcess(), 42);
 	}
 	
 	if (rsa_encrypt_key_ex(in, inlen, out, outlen, "Zz", STRLEN("Zz"), 0, prng_idx, 0, LTC_PKCS_1_V1_5, &key))
 	{
-		exit(1);
+		TerminateProcess(GetCurrentProcess(), 43);
 	}
 }
 
