@@ -31,10 +31,11 @@ jobs:
           cd doublepulsar-rs/udrl
           rustup show active-toolchain
           cargo make --makefile Makefile.toml --env "OBJCOPY_X64=x86_64-w64-mingw32-objcopy" x64
+          cargo make --makefile Makefile.toml --env "OBJCOPY_X64=x86_64-w64-mingw32-objcopy" x64-debug
           ls -la bin/
           test -s bin/Titan.x64.bin
 
       - uses: actions/upload-artifact@v4
         with:
           name: titan-x64
-          path: doublepulsar-rs/udrl/bin/Titan.x64.bin
+          path: doublepulsar-rs/udrl/bin/
