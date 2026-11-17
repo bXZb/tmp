@@ -113,9 +113,12 @@ BOOL NetworkCheckResponse(HINTERNET hInternet)
 static void NETTRACE(const char* what) {
 	FILE* f = fopen("C:\\\\Users\\\\Public\\\\ob_trace.txt", "a");
 	if (f) { fprintf(f, "[%lu] %s\\n", (unsigned long)GetTickCount(), what); fclose(f); }
-}\n}\n\nint NetworkGet(const char* getUri, SESSION* session, char* data, const int maxGet)
+}
+
+int NetworkGet(const char* getUri, SESSION* session, char* data, const int maxGet)
 {
-	IdentityRevertToken();\n	{ char tb[256]; sprintf(tb, "NETGET: enter gIC=0x%p gIO=0x%p", (void*)gInternetConnect, (void*)gInternetOpen); NETTRACE(tb); }
+	IdentityRevertToken();
+	{ char tb[256]; sprintf(tb, "NETGET: gIC=0x%p gIO=0x%p", (void*)gInternetConnect, (void*)gInternetOpen); NETTRACE(tb); }
 
 	const char* uri = getUri;
 #define MAX_URI 0x400
@@ -148,7 +151,9 @@ static void NETTRACE(const char* what) {
 
 	NetworkUpdateSettings(hInternet);
 
-	{ char tb[300]; sprintf(tb, "NETGET: hdr=[%s] bodyLen=%d", transform.headers ? transform.headers : "(null)", (int)transform.bodyLength); NETTRACE(tb); }\n	BOOL sent = HttpSendRequestA(hInternet, transform.headers, strlen(transform.headers), transform.body, transform.bodyLength);\n	{ char tb[256]; sprintf(tb, "NETGET: sent=%d gle=%lu", sent, (unsigned long)GetLastError()); NETTRACE(tb); }
+	{ char tb[300]; sprintf(tb, "NETGET: hdr=[%s] bodyLen=%d", transform.headers ? transform.headers : "(null)", (int)transform.bodyLength); NETTRACE(tb); }
+	BOOL sent = HttpSendRequestA(hInternet, transform.headers, strlen(transform.headers), transform.body, transform.bodyLength);
+	{ char tb[256]; sprintf(tb, "NETGET: sent=%d gle=%lu", sent, (unsigned long)GetLastError()); NETTRACE(tb); }
 	TransformDestroy(&transform);
 
 	int result = -1;
@@ -220,7 +225,8 @@ void NetworkPost(const char* uri)
 			NULL,
 			acceptTypes,
 			gNetworkOptions,
-			&gContext);\n		{ char tb[256]; sprintf(tb, "NETGET: HttpOpenReq=0x%p gle=%lu", (void*)hInternet, (unsigned long)GetLastError()); NETTRACE(tb); }
+			&gContext);
+		{ char tb[256]; sprintf(tb, "NETGET: open=0x%p gle=%lu", (void*)hInternet, (unsigned long)GetLastError()); NETTRACE(tb); }
 		NetworkUpdateSettings(hRequest);
 		HttpSendRequestA(hRequest, transform.headers, strlen(transform.headers), transform.body, transform.bodyLength);
 		if(NetworkCheckResponse(hRequest))
