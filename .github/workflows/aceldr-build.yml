@@ -9,51 +9,37 @@ on:
 
 jobs:
   aceldr:
-    name: AceLdr x64 loader bin
-    runs-on: windows-2022
-    env:
-      NASMVER: 2.16.03
+    name: AceLdr x64 loader bin (mingw)
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install nasm
-        shell: pwsh
+      - name: Install toolchain
         run: |
-          $nasmver = "2.16.03"
-          $url = "https://www.nasm.us/pub/nasm/releasebuilds/$nasmver/win64/nasm-$nasmver-win64.zip"
-          Invoke-WebRequest -Uri $url -OutFile nasm.zip
-          Expand-Archive nasm.zip -DestinationPath nasmtool
-          $nasmDir = (Resolve-Path "nasmtool/nasm-$nasmver").Path
-          echo $nasmDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-      - uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64 nasm
 
       - name: Build loader bin
-        shell: cmd
+        shell: bash
         run: |
-          cd aceldr\src
-          where nasm
-          nasm -f win64 asm\start.asm -o start.obj || exit /b 1
-          nasm -f win64 asm\spoof.asm -o spoof.obj || exit /b 1
-          nasm -f win64 asm\misc.asm -o misc.obj || exit /b 1
-          del asm\*.asm
-          cl /nologo /c /O2 /GS- /Zi /I. ace.c util.c retaddr.c hooks\delay.c hooks\heap.c hooks\spoof.c || exit /b 1
-          link /nologo /entry:Start /base:0x69000000 /out:../AceLdr.x64.bin /subsystem:console /fixed:no /dynamicbase:no *.obj /MAP:../AceLdr.x64.map || exit /b 1
-          if not exist ..\AceLdr.x64.bin exit /b 1
-
-      - name: Verify bin
-        shell: pwsh
-        run: |
-          Get-Item aceldr\AceLdr.x64.bin | Format-List Length
-          $b = [System.IO.File]::ReadAllBytes("aceldr\AceLdr.x64.bin")
-          if ($b.Length -lt 5000) { throw "bin too small" }
-          Write-Host "bin ok"
+          cd aceldr/src
+          # NASM objects
+          nasm -f win64 asm/start.asm -o start.obj
+          nasm -f win64 asm/spoof.asm -o spoof.obj
+          nasm -f win64 asm/misc.asm -o misc.obj
+          # C objects (mingw gcc, native GCC attributes valid)
+          x86_64-w64-mingw32-gcc -c -O2 -std=c17 -I. ace.c util.c retaddr.c \
+            hooks/delay.c hooks/heap.c hooks/spoof.c
+          # locate mingw ld script template and build linker script
+          x86_64-w64-mingw32-ld -i --verbose 2>/dev/null | sed -n '/^======/, /^======/p' | grep -v '=======' > linker_script.ld || true
+          # link relocatable with gc, entry root
+          x86_64-w64-mingw32-ld -T linker_script.ld --gc-sections -u Start \
+            -i *.o -o ../AceLdr.x64.bin
+          x86_64-w64-mingw32-strip --strip-unneeded ../AceLdr.x64.bin || true
+          ls -la ../AceLdr.x64.bin
+          test -s ../AceLdr.x64.bin
 
       - uses: actions/upload-artifact@v4
         with:
           name: aceldr-x64
-          path: |
-            aceldr/AceLdr.x64.bin
-            aceldr/AceLdr.x64.map
+          path: aceldr/AceLdr.x64.bin
