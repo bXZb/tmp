@@ -1,0 +1,34 @@
+name: dp-rs-build
+
+on:
+  push:
+    paths:
+      - "doublepulsar-rs/**"
+      - ".github/workflows/dp-rs-build.yml"
+  workflow_dispatch:
+
+jobs:
+  dp:
+    name: DoublePulsar Rust UDRL
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64 nasm
+          rustup toolchain install nightly --profile minimal
+          rustup component add rust-src --toolchain nightly
+          rustup target add x86_64-pc-windows-gnu --toolchain nightly
+          cargo install cargo-make --locked
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Build UDRL bin
+        shell: bash
+        run: |
+          cd doublepulsar-rs/udrl
+          cargo +nightly make --makefile Makefile.toml build-x64 || true
+          find . -name "*.bin" -o -name "*.o" | head -10
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dp-rs-udrl
+          path: doublepulsar-rs/udrl/
