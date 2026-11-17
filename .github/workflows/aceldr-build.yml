@@ -9,7 +9,7 @@ on:
 
 jobs:
   aceldr:
-    name: AceLdr x64 loader bin (mingw)
+    name: AceLdr x64 loader bin (official Makefile pipeline)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -17,31 +17,66 @@ jobs:
       - name: Install toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64 nasm
+          sudo apt-get install -y gcc-mingw-w64-x86-64 nasm python3
 
-      - name: Build loader bin
+      - name: Build loader (official Makefile flags)
         shell: bash
         run: |
-          cd aceldr/src
-          # NASM objects
-          nasm -f win64 asm/start.asm -o start.obj
-          nasm -f win64 asm/spoof.asm -o spoof.obj
-          nasm -f win64 asm/misc.asm -o misc.obj
-          # C objects (mingw gcc, native GCC attributes valid)
-          x86_64-w64-mingw32-gcc -c -O2 -std=c17 -I. ace.c util.c retaddr.c \
-            hooks/delay.c hooks/heap.c hooks/spoof.c
-          # locate mingw ld script template and build linker script
-          x86_64-w64-mingw32-ld -i --verbose > ldverbose.txt 2>&1 || true
-          sed -n '/======/, /======/p' ldverbose.txt | grep -v '======' > linker_script.ld
-          wc -l linker_script.ld
-          # link relocatable with gc, entry root
-          x86_64-w64-mingw32-ld -T linker_script.ld -e Start \
-            -i *.o -o ../AceLdr.x64.bin
-          x86_64-w64-mingw32-strip --strip-unneeded ../AceLdr.x64.bin || true
-          ls -la ../AceLdr.x64.bin
-          test -s ../AceLdr.x64.bin
+          cd aceldr
+          mkdir -p bin
+          nasm -Werror=all -f win64 src/asm/start.asm -o bin/start.tmp.o
+          nasm -Werror=all -f win64 src/asm/misc.asm -o bin/misc.tmp.o
+          nasm -Werror=all -f win64 src/asm/spoof.asm -o bin/spoof.tmp.o
+          x86_64-w64-mingw32-gcc src/*.c bin/start.tmp.o bin/misc.tmp.o bin/spoof.tmp.o src/hooks/*.c \
+            -o bin/AceLdr.x64.exe \
+            -Os -fno-asynchronous-unwind-tables -nostdlib \
+            -fno-ident -fpack-struct=8 -falign-functions=1 \
+            -s -ffunction-sections -falign-jumps=1 -Wall \
+            -Werror -fPIC -Wno-array-bounds \
+            -Wl,-s,--no-seh,--enable-stdcall-fixup \
+            -Wl,--image-base=0,-Tsrc/link.ld -I.
+          ls -la bin/
+
+      - name: Extract raw loader (ACELDR tag cut)
+        shell: python
+        run: |
+          import struct
+          p = "aceldr/bin/AceLdr.x64.exe"
+          d = open(p, "rb").read()
+          e_lfanew = struct.unpack_from("<I", d, 0x3C)[0]
+          nsec = struct.unpack_from("<H", d, e_lfanew + 6)[0]
+          oh = e_lfanew + 0x18
+          first = oh + struct.unpack_from("<H", d, e_lfanew + 20)[0]
+          pr, sz = struct.unpack_from("<II", d, first + 20)
+          sec = d[pr:pr + sz]
+          i = sec.find(b"ACELDR")
+          assert i > 0, "no ACELDR tag"
+          open("aceldr/bin/AceLdr.x64.bin", "wb").write(sec[:i])
+          print("extracted raw loader:", i, "bytes (tag at", i, ")")
+
+      - name: Build probe runner (prepend-blob executor)
+        shell: bash
+        run: |
+          cp /dev/null /tmp/probe.c
+          printf '%s\n' \
+            '#include <windows.h>' \
+            'int main(void) {' \
+            '   HANDLE f = CreateFileA("aceldr_blob.bin", GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);' \
+            '   if (f == INVALID_HANDLE_VALUE) return 1;' \
+            '   DWORD n = GetFileSize(f, NULL), got;' \
+            '   void *b = HeapAlloc(GetProcessHeap(), 0, n);' \
+            '   ReadFile(f, b, n, &got, NULL);' \
+            '   CloseHandle(f);' \
+            '   void *m = VirtualAlloc(0, n, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);' \
+            '   if (!m) return 2;' \
+            '   CopyMemory(m, b, n);' \
+            '   HANDLE t = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)m, 0, 0, 0);' \
+            '   if (t) WaitForSingleObject(t, INFINITE);' \
+            '   return 0;' \
+            '}' > /tmp/probe.c
+          x86_64-w64-mingw32-gcc /tmp/probe.c -o aceldr/bin/probe_runner.exe -O2 -mconsole
 
       - uses: actions/upload-artifact@v4
         with:
           name: aceldr-x64
-          path: aceldr/AceLdr.x64.bin
+          path: aceldr/bin/
