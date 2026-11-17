@@ -31,7 +31,9 @@ jobs:
           x86_64-w64-mingw32-gcc -c -O2 -std=c17 -I. ace.c util.c retaddr.c \
             hooks/delay.c hooks/heap.c hooks/spoof.c
           # locate mingw ld script template and build linker script
-          x86_64-w64-mingw32-ld -i --verbose 2>/dev/null | sed -n '/^======/, /^======/p' | grep -v '=======' > linker_script.ld || true
+          x86_64-w64-mingw32-ld -i --verbose > ldverbose.txt 2>&1 || true
+          sed -n '/======/, /======/p' ldverbose.txt | grep -v '======' > linker_script.ld
+          wc -l linker_script.ld
           # link relocatable with gc, entry root
           x86_64-w64-mingw32-ld -T linker_script.ld --gc-sections -u Start \
             -i *.o -o ../AceLdr.x64.bin
