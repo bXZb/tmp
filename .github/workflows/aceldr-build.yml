@@ -1,0 +1,35 @@
+name: aceldr-build
+
+on:
+  push:
+    paths:
+      - "aceldr/**"
+      - ".github/workflows/aceldr-build.yml"
+  workflow_dispatch:
+
+jobs:
+  aceldr:
+    name: AceLdr x64 loader bin
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Build loader bin
+        shell: cmd
+        run: |
+          cd aceldr\src
+          ml64 /c asm\start.asm || exit /b 1
+          ml64 /c asm\spoof.asm || exit /b 1
+          ml64 /c asm\misc.asm || exit /b 1
+          cl /nologo /c /O2 /GS- /Zi /I. ace.c util.c retaddr.c hooks\delay.c hooks\heap.c hooks\spoof.c || exit /b 1
+          del *.asm
+          link /nologo /entry:start /base:0x69000000 /out:../AceLdr.x64.bin /subsystem:console /fixed:no /dynamicbase:no *.obj /MAP:../AceLdr.x64.map || exit /b 1
+          if not exist ..\AceLdr.x64.bin exit /b 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aceldr-x64
+          path: |
+            aceldr/AceLdr.x64.bin
+            aceldr/AceLdr.x64.map
