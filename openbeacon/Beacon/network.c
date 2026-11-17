@@ -110,7 +110,10 @@ BOOL NetworkCheckResponse(HINTERNET hInternet)
 	return atoi(status) == HTTP_STATUS_OK;
 }
 
-static void NETTRACE(const char* what) {\n	FILE* f = fopen("C:\\\\Users\\\\Public\\\\ob_trace.txt", "a");\n	if (f) { fprintf(f, "[%lu] %s\\n", (unsigned long)GetTickCount(), what); fclose(f); }\n}\n\nint NetworkGet(const char* getUri, SESSION* session, char* data, const int maxGet)
+static void NETTRACE(const char* what) {
+	FILE* f = fopen("C:\\\\Users\\\\Public\\\\ob_trace.txt", "a");
+	if (f) { fprintf(f, "[%lu] %s\\n", (unsigned long)GetTickCount(), what); fclose(f); }
+}\n}\n\nint NetworkGet(const char* getUri, SESSION* session, char* data, const int maxGet)
 {
 	IdentityRevertToken();\n	{ char tb[256]; sprintf(tb, "NETGET: enter gIC=0x%p gIO=0x%p", (void*)gInternetConnect, (void*)gInternetOpen); NETTRACE(tb); }
 
