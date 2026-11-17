@@ -21728,11 +21728,12 @@ SetProcessValidCallTargets(
 	PCFG_CALL_TARGET_INFO 			CfgCallInfo
 	);
 
-typedef struct __attribute__((packed))
-{
+#pragma pack(push, 1)
+typedef struct {
 	ULONG					ExtendedProcessInfo;
 	ULONG					ExtendedProcessInfoBuffer;
 } EXTENDED_PROCESS_INFORMATION, *PEXTENDED_PROCESS_INFORMATION;
+#pragma pack(pop)
 
 # define RTL_PROCESS_HEAP_REGION             0x0002
 # define RTL_PROCESS_HEAP_UNCOMMITTED_RANGE  0x0100
