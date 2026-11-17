@@ -9,26 +9,32 @@ on:
 
 jobs:
   dp:
-    name: DoublePulsar Rust UDRL
+    name: Titan UDRL x64 bin (official cargo-make pipeline)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+
       - name: Install toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64 nasm
+          sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
           rustup toolchain install nightly --profile minimal
-          rustup component add rust-src --toolchain nightly
           rustup target add x86_64-pc-windows-gnu --toolchain nightly
           cargo install cargo-make --locked
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      - name: Build UDRL bin
+
+      - name: Build Titan.x64.bin (task x64 = build + objcopy extract)
         shell: bash
+        env:
+          OBJCOPY_X64: x86_64-w64-mingw32-objcopy
         run: |
           cd doublepulsar-rs/udrl
-          cargo +nightly make --makefile Makefile.toml build-x64 || true
-          find . -name "*.bin" -o -name "*.o" | head -10
+          rustup show active-toolchain
+          cargo make --makefile Makefile.toml --env "OBJCOPY_X64=x86_64-w64-mingw32-objcopy" x64
+          ls -la bin/
+          test -s bin/Titan.x64.bin
+
       - uses: actions/upload-artifact@v4
         with:
-          name: dp-rs-udrl
-          path: doublepulsar-rs/udrl/
+          name: titan-x64
+          path: doublepulsar-rs/udrl/bin/Titan.x64.bin
