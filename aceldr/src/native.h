@@ -5956,7 +5956,7 @@ typedef struct _BASE_SET_REENTER_COUNT
 	ULONG fIncDec;
 } BASE_SET_REENTER_COUNT, *PBASE_SET_REENTER_COUNT;
 
-#if 0 /* VENDOR FIX: newer Windows SDK already defines ACTCTX types in winbase.h */
+#if !defined(_WINNT_) || (defined(_MSC_VER) && (_MSC_VER >= 1300))
 typedef enum
 {
     ACTCTX_RUN_LEVEL_UNSPECIFIED = 0,
@@ -21728,12 +21728,11 @@ SetProcessValidCallTargets(
 	PCFG_CALL_TARGET_INFO 			CfgCallInfo
 	);
 
-#pragma pack(push, 1)
-typedef struct {
+typedef struct __attribute__((packed))
+{
 	ULONG					ExtendedProcessInfo;
 	ULONG					ExtendedProcessInfoBuffer;
 } EXTENDED_PROCESS_INFORMATION, *PEXTENDED_PROCESS_INFORMATION;
-#pragma pack(pop)
 
 # define RTL_PROCESS_HEAP_REGION             0x0002
 # define RTL_PROCESS_HEAP_UNCOMMITTED_RANGE  0x0100

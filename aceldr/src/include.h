@@ -26,7 +26,7 @@
 #define SPOOF(...) SPOOF_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
 #define OFFSET( x )    ( ULONG_PTR )( GetIp( ) - ( ( ULONG_PTR ) & GetIp - ( ULONG_PTR ) x ) )
-#define SECTION( x )    __attribute__(( section( ".text$\ #x\" ) ))
+#define SECTION( x )    __attribute__(( section( ".text$" #x ) ))
 
 #define D_API( x )    __typeof__( x ) * x
 #define U_PTR( x )    ( ( ULONG_PTR ) x )
