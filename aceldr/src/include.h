@@ -26,9 +26,9 @@
 #define SPOOF(...) SPOOF_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
 #define OFFSET( x )    ( ULONG_PTR )( GetIp( ) - ( ( ULONG_PTR ) & GetIp - ( ULONG_PTR ) x ) )
-#define SECTION( x )    __attribute__(( section( ".text$" #x ) ))
+#define SECTION( x )    /* MSVC CI: default .text section */
 
-#define D_API( x )    __typeof__( x ) * x
+#define D_API( x )    decltype( x ) * x
 #define U_PTR( x )    ( ( ULONG_PTR ) x )
 #define C_PTR( x )    ( ( PVOID ) x )
 #define G_END( x )    U_PTR( GetIp( ) + 11 )
