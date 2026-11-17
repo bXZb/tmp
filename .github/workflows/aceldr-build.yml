@@ -32,7 +32,7 @@ jobs:
             -Os -fno-asynchronous-unwind-tables -nostdlib \
             -fno-ident -fpack-struct=8 -falign-functions=1 \
             -s -ffunction-sections -falign-jumps=1 -Wall \
-            -Werror -fPIC -Wno-array-bounds \
+            -Werror -fPIC -Wno-array-bounds -Wno-attributes \
             -Wl,-s,--no-seh,--enable-stdcall-fixup \
             -Wl,--image-base=0,-Tsrc/link.ld -I.
           ls -la bin/
