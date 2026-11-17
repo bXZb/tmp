@@ -47,7 +47,7 @@ jobs:
           nsec = struct.unpack_from("<H", d, e_lfanew + 6)[0]
           oh = e_lfanew + 0x18
           first = oh + struct.unpack_from("<H", d, e_lfanew + 20)[0]
-          pr, sz = struct.unpack_from("<II", d, first + 20)
+          sz, pr = struct.unpack_from("<II", d, first + 16)
           sec = d[pr:pr + sz]
           i = sec.find(b"ACELDR")
           assert i > 0, "no ACELDR tag"
