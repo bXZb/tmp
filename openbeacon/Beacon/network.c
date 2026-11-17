@@ -148,6 +148,7 @@ int NetworkGet(const char* getUri, SESSION* session, char* data, const int maxGe
 		NULL, 
 		gNetworkOptions, 
 		&gContext);
+		{ char tb[256]; sprintf(tb, "NETGET: open=0x%p gle=%lu", (void*)hInternet, (unsigned long)GetLastError()); NETTRACE(tb); }
 
 	NetworkUpdateSettings(hInternet);
 
@@ -226,7 +227,6 @@ void NetworkPost(const char* uri)
 			acceptTypes,
 			gNetworkOptions,
 			&gContext);
-		{ char tb[256]; sprintf(tb, "NETGET: open=0x%p gle=%lu", (void*)hInternet, (unsigned long)GetLastError()); NETTRACE(tb); }
 		NetworkUpdateSettings(hRequest);
 		HttpSendRequestA(hRequest, transform.headers, strlen(transform.headers), transform.body, transform.bodyLength);
 		if(NetworkCheckResponse(hRequest))
