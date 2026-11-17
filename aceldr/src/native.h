@@ -5956,7 +5956,7 @@ typedef struct _BASE_SET_REENTER_COUNT
 	ULONG fIncDec;
 } BASE_SET_REENTER_COUNT, *PBASE_SET_REENTER_COUNT;
 
-#if !defined(_WINNT_) || (defined(_MSC_VER) && (_MSC_VER >= 1300))
+#if 0 /* VENDOR FIX: newer Windows SDK already defines ACTCTX types in winbase.h */
 typedef enum
 {
     ACTCTX_RUN_LEVEL_UNSPECIFIED = 0,
