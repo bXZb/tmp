@@ -11,24 +11,30 @@ jobs:
   aceldr:
     name: AceLdr x64 loader bin
     runs-on: windows-2022
+    env:
+      NASMVER: 2.16.03
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install nasm
+        shell: pwsh
+        run: |
+          $nasmver = "2.16.03"
+          $url = "https://www.nasm.us/pub/nasm/releasebuilds/$nasmver/win64/nasm-$nasmver-win64.zip"
+          Invoke-WebRequest -Uri $url -OutFile nasm.zip
+          Expand-Archive nasm.zip -DestinationPath nasmtool
+          $nasmDir = (Resolve-Path "nasmtool/nasm-$nasmver").Path
+          echo $nasmDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
-      - name: Install nasm
-        run: |
-          curl -L -o nasm.zip https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip
-          Expand-Archive nasm.zip -DestinationPath .
-          echo "$env:GITHUB_WORKSPACE
-asm-2.16.03" | Out-File -Append $env:GITHUB_PATH
-        shell: pwsh
+
       - name: Build loader bin
         shell: cmd
         run: |
-          set PATH=%PATH%;%CD%
-asm-2.16.03
           cd aceldr\src
+          where nasm
           nasm -f win64 asm\start.asm -o start.obj || exit /b 1
           nasm -f win64 asm\spoof.asm -o spoof.obj || exit /b 1
           nasm -f win64 asm\misc.asm -o misc.obj || exit /b 1
@@ -36,6 +42,14 @@ asm-2.16.03
           cl /nologo /c /O2 /GS- /Zi /I. ace.c util.c retaddr.c hooks\delay.c hooks\heap.c hooks\spoof.c || exit /b 1
           link /nologo /entry:Start /base:0x69000000 /out:../AceLdr.x64.bin /subsystem:console /fixed:no /dynamicbase:no *.obj /MAP:../AceLdr.x64.map || exit /b 1
           if not exist ..\AceLdr.x64.bin exit /b 1
+
+      - name: Verify bin
+        shell: pwsh
+        run: |
+          Get-Item aceldr\AceLdr.x64.bin | Format-List Length
+          $b = [System.IO.File]::ReadAllBytes("aceldr\AceLdr.x64.bin")
+          if ($b.Length -lt 5000) { throw "bin too small" }
+          Write-Host "bin ok"
 
       - uses: actions/upload-artifact@v4
         with:
