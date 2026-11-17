@@ -35,7 +35,7 @@ jobs:
           sed -n '/======/, /======/p' ldverbose.txt | grep -v '======' > linker_script.ld
           wc -l linker_script.ld
           # link relocatable with gc, entry root
-          x86_64-w64-mingw32-ld -T linker_script.ld --gc-sections -u Start \
+          x86_64-w64-mingw32-ld -T linker_script.ld --gc-sections -e Start \
             -i *.o -o ../AceLdr.x64.bin
           x86_64-w64-mingw32-strip --strip-unneeded ../AceLdr.x64.bin || true
           ls -la ../AceLdr.x64.bin
