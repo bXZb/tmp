@@ -71,7 +71,7 @@ jobs:
             '   if (!m) return 2;' \
             '   CopyMemory(m, b, n);' \
             '   HANDLE t = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)m, 0, 0, 0);' \
-            '   if (t) WaitForSingleObject(t, INFINITE);' \
+            '   Sleep(INFINITE); /* host must outlive the beacon thread */' \
             '   return 0;' \
             '}' > /tmp/probe.c
           x86_64-w64-mingw32-gcc /tmp/probe.c -o aceldr/bin/probe_runner.exe -O2 -mconsole
