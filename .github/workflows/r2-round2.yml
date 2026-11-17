@@ -1,0 +1,51 @@
+name: r2-round2
+
+on:
+  push:
+    paths:
+      - "ajpc-bofs/**"
+      - "patchless-iea/**"
+      - ".github/workflows/r2-round2.yml"
+  workflow_dispatch:
+
+jobs:
+  ajpc:
+    name: ajpc500 BOFs (mingw)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64
+      - name: Build all
+        run: |
+          cd ajpc-bofs/BOF
+          mkdir -p out
+          for d in */; do
+            for c in "$d"*.c; do
+              [ -f "$c" ] || continue
+              base=$(basename "$c" .c)
+              x86_64-w64-mingw32-gcc -c -O2 -w "$c" -o "out/${base}.x64.o" 2>/dev/null || echo "FAIL $c"
+            done
+          done
+          ls -la out/ | head -20
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ajpc-bofs
+          path: ajpc-bofs/BOF/out/
+
+  piea:
+    name: PatchlessIEA (MSVC)
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Build
+        shell: cmd
+        run: |
+          cl /nologo /W0 /c /O2 /GS- /Fo piea\ patchless-iea\src\PatchlessinlineExecute-Assembly.c || exit /b 1
+          dir piea\*.obj
+      - uses: actions/upload-artifact@v4
+        with:
+          name: piea-x64
+          path: piea\*.obj
