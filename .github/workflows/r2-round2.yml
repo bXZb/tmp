@@ -43,7 +43,9 @@ jobs:
       - name: Build
         shell: cmd
         run: |
-          cl /nologo /W0 /c /O2 /GS- /Fopiea\ \patchless-iea\src\PatchlessinlineExecute-Assembly.c || exit /b 1
+          if not exist piea\ mkdir piea\
+          cl /nologo /W0 /c /O2 /GS- /Fo"piea\PatchlessinlineExecute-Assembly.obj" patchless-iea\src\PatchlessinlineExecute-Assembly.c || exit /b 1
+          dir piea
           dir piea\*.obj
       - uses: actions/upload-artifact@v4
         with:
