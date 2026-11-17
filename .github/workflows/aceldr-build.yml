@@ -16,17 +16,27 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
+      - name: Install nasm
+        run: |
+          curl -L -o nasm.zip https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip
+          Expand-Archive nasm.zip -DestinationPath .
+          echo "$env:GITHUB_WORKSPACE
+asm-2.16.03" | Out-File -Append $env:GITHUB_PATH
+        shell: pwsh
       - name: Build loader bin
         shell: cmd
         run: |
+          set PATH=%PATH%;%CD%
+asm-2.16.03
           cd aceldr\src
-          ml64 /c asm\start.asm || exit /b 1
-          ml64 /c asm\spoof.asm || exit /b 1
-          ml64 /c asm\misc.asm || exit /b 1
+          nasm -f win64 asm\start.asm -o start.obj || exit /b 1
+          nasm -f win64 asm\spoof.asm -o spoof.obj || exit /b 1
+          nasm -f win64 asm\misc.asm -o misc.obj || exit /b 1
+          del asm\*.asm
           cl /nologo /c /O2 /GS- /Zi /I. ace.c util.c retaddr.c hooks\delay.c hooks\heap.c hooks\spoof.c || exit /b 1
-          del *.asm
-          link /nologo /entry:start /base:0x69000000 /out:../AceLdr.x64.bin /subsystem:console /fixed:no /dynamicbase:no *.obj /MAP:../AceLdr.x64.map || exit /b 1
+          link /nologo /entry:Start /base:0x69000000 /out:../AceLdr.x64.bin /subsystem:console /fixed:no /dynamicbase:no *.obj /MAP:../AceLdr.x64.map || exit /b 1
           if not exist ..\AceLdr.x64.bin exit /b 1
+
       - uses: actions/upload-artifact@v4
         with:
           name: aceldr-x64
