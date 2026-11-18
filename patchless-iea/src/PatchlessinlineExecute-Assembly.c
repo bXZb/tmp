@@ -540,7 +540,7 @@ void go(char* args, int length) {//Executes .NET assembly in memory
 	BOOL success = 1;
 	size_t size = 65535;
 	char* returnData = (char*)intAlloc(size);
-	memset(returnData, 0, size);
+	MSVCRT$memset(returnData, 0, size);
 
 	/*
 	BeaconPrintf(CALLBACK_OUTPUT, "[+] appdomain = %s\n", appDomain);//Debug Only
