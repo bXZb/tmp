@@ -49,7 +49,7 @@ typedef HANDLE(WINAPI* _CreateMailslotA) (LPCSTR lpName, DWORD nMaxMessageSize, 
 typedef HANDLE(WINAPI* _CreateFileA) (LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD wFlagsAndAttributes, HANDLE hTemplateFile);
 /*BOF Defs*/
 #define intAlloc(size) KERNEL32$HeapAlloc(KERNEL32$GetProcessHeap(), HEAP_ZERO_MEMORY, size)
-#define intZeroMemory(addr,size) memset((addr),0,size)
+#define intZeroMemory(addr,size) MSVCRT$memset((addr),0,size)
 #define memset MSVCRT$memset
 #define stdout (__acrt_iob_func(1))
 #define STATUS_SUCCESS 0
