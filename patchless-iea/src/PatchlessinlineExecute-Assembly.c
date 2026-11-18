@@ -305,7 +305,7 @@ BOOL ReadSlot(char* output, HANDLE* mailHandle)
 	LPSTR lpszBuffer = NULL;
 	size_t size = 65535;
 	char* achID = (char*)intAlloc(size);
-	memset(achID, 0, size);
+	MSVCRT$memset(achID, 0, size);
 	DWORD cAllMessages = 0;
 	HANDLE hEvent;
 	OVERLAPPED ov;
