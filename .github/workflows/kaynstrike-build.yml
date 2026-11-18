@@ -1,0 +1,55 @@
+name: kaynstrike-build
+
+on:
+  push:
+    paths:
+      - "kaynstrike/**"
+      - ".github/workflows/kaynstrike-build.yml"
+  workflow_dispatch:
+
+jobs:
+  kayn:
+    name: KaynStrike x64 UDRL bin (official makefile pipeline)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64-x86-64 nasm python3
+
+      - name: Build loader (official makefile flags)
+        shell: bash
+        run: |
+          cd kaynstrike
+          mkdir -p bin
+          nasm -f win64 src/KAssembly.s -o bin/KAssembly.x64.o
+          x86_64-w64-mingw32-gcc src/*.c bin/KAssembly.x64.o -o bin/KaynStrike.x64.exe \
+            -Os -fno-asynchronous-unwind-tables -nostdlib \
+            -fno-ident -fpack-struct=8 -falign-functions=1 \
+            -s -ffunction-sections -falign-jumps=1 -w \
+            -falign-labels=1 -fPIC \
+            -Wl,-s,--no-seh,--enable-stdcall-fixup \
+            -Iinclude -masm=intel
+          ls -la bin/
+
+      - name: Extract raw loader (ENDOFCODE tag cut)
+        shell: python
+        run: |
+          import struct
+          p = "kaynstrike/bin/KaynStrike.x64.exe"
+          d = open(p, "rb").read()
+          e_lfanew = struct.unpack_from("<I", d, 0x3C)[0]
+          first = e_lfanew + 0x18 + struct.unpack_from("<H", d, e_lfanew + 20)[0]
+          sz, pr = struct.unpack_from("<II", d, first + 16)
+          sec = d[pr:pr + sz]
+          i = sec.find(b"ENDOFCODE")
+          assert i > 0, "no ENDOFCODE tag"
+          open("kaynstrike/bin/KaynStrike.x64.bin", "wb").write(sec[:i])
+          print("extracted:", i, "bytes")
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kaynstrike-x64
+          path: kaynstrike/bin/KaynStrike.x64.bin
