@@ -50,7 +50,7 @@ typedef HANDLE(WINAPI* _CreateFileA) (LPCSTR lpFileName, DWORD dwDesiredAccess, 
 /*BOF Defs*/
 #define intAlloc(size) KERNEL32$HeapAlloc(KERNEL32$GetProcessHeap(), HEAP_ZERO_MEMORY, size)
 #define intZeroMemory(addr,size) MSVCRT$memset((addr),0,size)
-#define memset MSVCRT$memset
+__inline void* __cdecl memset(void* d, int v, unsigned long n) { unsigned char* p = (unsigned char*)d; while (n--) *p++ = (unsigned char)v; return d; } /* VENDOR: local memset - MSVC backend emits bare calls that no token macro can catch */
 #define stdout (__acrt_iob_func(1))
 #define STATUS_SUCCESS 0
 #define NtCurrentProcess() ( (HANDLE)(LONG_PTR) -1 )
