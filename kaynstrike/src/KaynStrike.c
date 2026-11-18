@@ -154,3 +154,6 @@ PVOID WINAPI KaynLoader( VOID )
         Instance.Win32.NtContinue( &CtxFreeMem, FALSE );
     }
 }
+
+// VENDOR PATCH: section name sorts after every .text.* function section
+__attribute__((section(".text.ZZZ"))) const char g_endofcode_tag[] = { 0x45,0x4E,0x44,0x4F,0x46,0x43,0x4F,0x44,0x45,0 };
