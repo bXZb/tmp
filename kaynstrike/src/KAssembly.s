@@ -45,3 +45,7 @@ SECTION .text
        pop     rax
        sub     rax, 5
        ret
+
+; VENDOR PATCH: extract.py expects this tag - upstream never emitted it
+ENDOFCODE:
+    db 0x45,0x4E,0x44,0x4F,0x46,0x43,0x4F,0x44,0x45
